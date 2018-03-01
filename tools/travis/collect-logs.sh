@@ -7,19 +7,29 @@ ROOTDIR="$SCRIPTDIR/../../"
 
 cd $ROOTDIR
 
-echo "Gathering logs to upload to https://app.box.com/v/openwhisk-travis-logs"
-
-mkdir logs
-
 # Logs from all the pods
-oc logs $(oc get pod -lname=couchdb --no-headers | awk '{print $1}') >& logs/couchdb.log
-oc logs $(oc get pod -lname=zookeeper --no-headers | awk '{print $1}') >& logs/zookeeper.log
-oc logs $(oc get pod -lname=kafka --no-headers | awk '{print $1}') >& logs/kafka.log
-oc logs controller-0 >& logs/controller-0.log
-oc logs controller-1 >& logs/controller-1.log
-# oc logs -lname=invoker -c docker-pull-runtimes >& logs/invoker-docker-pull.log
-oc logs invoker-0 >& logs/invoker-invoker.log
-oc logs $(oc get pod -lname=nginx --no-headers | awk '{print $1}') >& logs/nginx.log
-# oc logs jobs/install-routemgmt >& logs/routemgmt.log
-oc logs jobs/install-catalog >& logs/catalog.log
-oc get pods -o wide --show-all >& logs/all-pods.txt
+echo "### STRIMZI LOGS ###"
+oc logs $(oc get pods | grep strimzi-cluster-controller | awk '{print $1}')
+echo ""
+echo ""
+echo "### ZOOKEEPER LOGS ###"
+oc logs $(oc get pods | grep zookeeper | awk '{print $1}')
+echo ""
+echo ""
+echo "### KAFKA LOGS ###"
+oc logs $(oc get pods | grep kafka | awk '{print $1}')
+echo ""
+echo ""
+echo "### COUCHDB LOGS ###"
+oc logs $(oc get pods | grep couchdb | awk '{print $1}')
+echo ""
+echo ""
+echo "### CONTROLLER LOGS ###"
+oc logs controller-0
+echo ""
+echo ""
+echo "### INVOKER LOGS ###"
+oc logs invoker-0
+oc get pods -o wide --show-all
+echo ""
+echo ""

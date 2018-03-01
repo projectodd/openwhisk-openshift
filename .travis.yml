@@ -20,8 +20,9 @@ before_install:
 script:
   - ./tools/travis/scancode.sh
   - ./tools/travis/build.sh
-  # - ./tools/travis/collect-logs.sh
-  # - ./tools/travis/box-upload.py "logs" "deploy-openshift-$TRAVIS_BUILD_ID-$TRAVIS_BRANCH.tar.gz"
+
+after_failure:
+  - ./tools/travis/collect-logs.sh
 
 # deploy:
 # - provider: script
