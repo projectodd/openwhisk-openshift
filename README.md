@@ -6,7 +6,9 @@
 The following command will deploy OpenWhisk in your OpenShift project
 using the latest template in this repo:
 
-    oc process -f http://bit.ly/openwhisk-template | oc create -f -
+    oc process -f https://git.io/openwhisk-template | oc create -f -
+
+The shortened URL redirects to https://raw.githubusercontent.com/projectodd/openwhisk-openshift/master/template.yml
 
 It'll take a few minutes, but once all the pods are running/completed,
 you can configure the `wsk` CLI to use your cluster:
