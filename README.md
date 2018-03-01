@@ -1,5 +1,8 @@
 # OpenWhisk on OpenShift
 
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+[![Build Status](https://travis-ci.org/projectodd/openwhisk-openshift.svg?branch=master)](https://travis-ci.org/projectodd/openwhisk-openshift)
+
 The following command will deploy OpenWhisk in your OpenShift project
 using the latest template in this repo:
 
