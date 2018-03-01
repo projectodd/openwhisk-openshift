@@ -60,6 +60,11 @@ parameters:
   generate: expression
   from: "[a-zA-Z0-9]{16}"
   required: true
+- name: COUCHDB_VOLUME_CAPACITY
+  description: Volume space available for CouchDB data, e.g. 512Mi, 2Gi.
+  displayName: CouchDB Volume Capacity
+  required: true
+  value: 5Gi
 - name: ZOOKEEPER_NODE_COUNT
   description: Number of Zookeper cluster nodes which will be deployed (odd number of nodes is recomended)
   displayName: Number of Zookeper cluster nodes (odd number of nodes is recomended)
@@ -497,6 +502,16 @@ objects:
     db_whisk_actions: test_whisks
     db_whisk_activations: test_activations
     db_whisk_auths: test_subjects
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: couchdb-data
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 40Gi
 - apiVersion: extensions/v1beta1
   kind: Deployment
   metadata:
@@ -513,7 +528,8 @@ objects:
         restartPolicy: Always
         volumes:
         - name: couchdb-data
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: couchdb-data
         containers:
         - name: couchdb
           imagePullPolicy: IfNotPresent
