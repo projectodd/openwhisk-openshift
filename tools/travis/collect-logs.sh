@@ -12,17 +12,14 @@ echo "Gathering logs to upload to https://app.box.com/v/openwhisk-travis-logs"
 mkdir logs
 
 # Logs from all the pods
-kubectl -n openwhisk logs -lname=couchdb >& logs/couchdb.log
-kubectl -n openwhisk logs -lname=zookeeper >& logs/zookeeper.log
-kubectl -n openwhisk logs -lname=kafka >& logs/kafka.log
-kubectl -n openwhisk logs controller-0 >& logs/controller-0.log
-kubectl -n openwhisk logs controller-1 >& logs/controller-1.log
-kubectl -n openwhisk logs -lname=invoker -c docker-pull-runtimes >& logs/invoker-docker-pull.log
-kubectl -n openwhisk logs -lname=invoker -c invoker >& logs/invoker-invoker.log
-kubectl -n openwhisk logs -lname=nginx >& logs/nginx.log
-kubectl -n openwhisk logs jobs/install-routemgmt >& logs/routemgmt.log
-kubectl -n openwhisk logs jobs/install-catalog >& logs/catalog.log
-kubectl get pods --all-namespaces -o wide --show-all >& logs/all-pods.txt
-
-# System level logs from minikube
-minikube logs >& logs/minikube.log
+oc logs $(oc get pod -lname=couchdb --no-headers | awk '{print $1}') >& logs/couchdb.log
+oc logs $(oc get pod -lname=zookeeper --no-headers | awk '{print $1}') >& logs/zookeeper.log
+oc logs $(oc get pod -lname=kafka --no-headers | awk '{print $1}') >& logs/kafka.log
+oc logs controller-0 >& logs/controller-0.log
+oc logs controller-1 >& logs/controller-1.log
+# oc logs -lname=invoker -c docker-pull-runtimes >& logs/invoker-docker-pull.log
+oc logs invoker-0 >& logs/invoker-invoker.log
+oc logs $(oc get pod -lname=nginx --no-headers | awk '{print $1}') >& logs/nginx.log
+# oc logs jobs/install-routemgmt >& logs/routemgmt.log
+oc logs jobs/install-catalog >& logs/catalog.log
+oc get pods -o wide --show-all >& logs/all-pods.txt
