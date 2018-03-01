@@ -60,14 +60,16 @@ parameters:
   generate: expression
   from: "[a-zA-Z0-9]{16}"
   required: true
-- name: KAFKA_MEMORY_LIMIT
-  description: The maximum container memory for each Kafka
-  value: "512Mi"
+- name: ZOOKEEPER_NODE_COUNT
+  description: Number of Zookeper cluster nodes which will be deployed (odd number of nodes is recomended)
+  displayName: Number of Zookeper cluster nodes (odd number of nodes is recomended)
   required: true
-- name: KAFKA_JAVA_OPTS
-  description: JVM options to pass to Kafka - recommended to set at least Xmx here
-  value: "-Xmx256m"
+  value: "1"
+- name: KAFKA_NODE_COUNT
+  description: Number of Kafka cluster nodes which will be deployed
+  displayName: Number of Kafka cluster nodes
   required: true
+  value: "1"
 - name: WHISK_SYSTEM_AUTH
   description: OpenWhisk Auth token for whisk.system account
   generate: expression
@@ -358,7 +360,7 @@ objects:
   
           # properties for Kafka connection
           - name: "KAFKA_HOSTS"
-            value: "$(KAFKA_SERVICE_HOST):$(KAFKA_SERVICE_PORT_KAFKA)"
+            value: "$(STRIMZI_OPENWHISK_KAFKA_SERVICE_HOST):$(STRIMZI_OPENWHISK_KAFKA_SERVICE_PORT_CLIENTS)"
   
           # properties for DB connection
           - name: "DB_USERNAME"
@@ -426,7 +428,7 @@ objects:
         initContainers:
         - name: wait-for-services
           image: busybox
-          command: ['sh', '-cu', 'echo "$COUCHDB_SERVICE_HOST $KAFKA_SERVICE_HOST"']
+          command: ['sh', '-cu', 'echo "$COUCHDB_SERVICE_HOST $STRIMZI_OPENWHISK_KAFKA_SERVICE_HOST"']
         - name: wait-for-couchdb
           image: busybox
           command: ['sh', '-c', 'until wget -T 5 --spider http://${COUCHDB_SERVICE_HOST}:${COUCHDB_SERVICE_PORT}/_all_dbs; do echo waiting for couchdb; sleep 2; done;']
@@ -623,7 +625,7 @@ objects:
         initContainers:
         - name: wait-for-services
           image: busybox
-          command: ['sh', '-cu', 'echo "$COUCHDB_SERVICE_HOST $ZOOKEEPER_SERVICE_HOST $KAFKA_SERVICE_HOST"']
+          command: ['sh', '-cu', 'echo "$COUCHDB_SERVICE_HOST $STRIMZI_OPENWHISK_ZOOKEEPER_SERVICE_HOST $STRIMZI_OPENWHISK_KAFKA_SERVICE_HOST"']
         - name: wait-for-controller
           image: busybox
           command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
@@ -718,11 +720,11 @@ objects:
   
             # properties for Kafka connection
             - name: "KAFKA_HOSTS"
-              value: "$(KAFKA_SERVICE_HOST):$(KAFKA_SERVICE_PORT_KAFKA)"
+              value: "$(STRIMZI_OPENWHISK_KAFKA_SERVICE_HOST):$(STRIMZI_OPENWHISK_KAFKA_SERVICE_PORT_CLIENTS)"
   
             # properties for zookeeper connection
             - name: "ZOOKEEPER_HOSTS"
-              value: "$(ZOOKEEPER_SERVICE_HOST):$(ZOOKEEPER_SERVICE_PORT_ZOOKEEPER)"
+              value: "$(STRIMZI_OPENWHISK_ZOOKEEPER_SERVICE_HOST):$(STRIMZI_OPENWHISK_ZOOKEEPER_SERVICE_PORT_CLIENTS)"
   
             # properties for DB connection
             - name: "DB_USERNAME"
@@ -801,83 +803,6 @@ objects:
           image: projectodd/swift3action:openshift-latest
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
-- apiVersion: v1
-  kind: Service
-  metadata:
-    name: kafka
-    labels:
-      name: kafka
-  spec:
-    selector:
-      name: kafka
-    ports:
-      - port: 9092
-        targetPort: 9092
-        name: kafka
-- apiVersion: extensions/v1beta1
-  kind: Deployment
-  metadata:
-    name: kafka
-    labels:
-      name: kafka
-  spec:
-    replicas: 1
-    template:
-      metadata:
-        labels:
-          name: kafka
-      spec:
-        restartPolicy: Always
-        volumes:
-        - name: kafka-logs
-          emptyDir: {}
-        - name: kafka
-          emptyDir: {}
-  
-        initContainers:
-        - name: wait-for-zookeeper
-          image: busybox
-          command: ['sh', '-cu', 'nc -v -w 1 -z $ZOOKEEPER_SERVICE_HOST $ZOOKEEPER_SERVICE_PORT']
-  
-        containers:
-        - name: kafka
-          imagePullPolicy: IfNotPresent
-          image: projectodd/whisk_kafka:openshift-latest
-          ports:
-          - name: kafka
-            containerPort: 9092
-          resources:
-            limits:
-              memory: ${KAFKA_MEMORY_LIMIT}
-          env:
-          - name: "KAFKA_BROKER_ID"
-            value: "0"
-          - name: "KAFKA_ADVERTISED_HOST_NAME"
-            value: "$(KAFKA_SERVICE_HOST)"
-          - name: "KAFKA_ADVERTISED_PORT"
-            value: "$(KAFKA_SERVICE_PORT_KAFKA)"
-          - name: "KAFKA_HOST_NAME"
-            valueFrom:
-              fieldRef:
-                fieldPath: status.podIP
-          - name: "KAFKA_PORT"
-            value: "$(KAFKA_SERVICE_PORT_KAFKA)"
-          - name: "KAFKA_HEAP_OPTS"
-            value: "${KAFKA_JAVA_OPTS}"
-  
-          # Need a writeable volume for OpenShift
-          - name: "KAFKA_LOG_DIRS"
-            value: "/data/logs"
-  
-          # zookeeper info
-          - name: "KAFKA_ZOOKEEPER_CONNECT"
-            value: "$(ZOOKEEPER_SERVICE_HOST):$(ZOOKEEPER_SERVICE_PORT_ZOOKEEPER)"
-  
-          volumeMounts:
-            - name: kafka-logs
-              mountPath: "/data"
-            - name: kafka
-              mountPath: "/kafka"
 - apiVersion: v1
   kind: Service
   metadata:
@@ -1053,57 +978,60 @@ objects:
   stringData:
     db_username: "${COUCHDB_USER}"
     db_password: "${COUCHDB_PASSWORD}"
-- apiVersion: v1
-  kind: Service
-  metadata:
-    name: zookeeper
-    labels:
-      name: zookeeper
-  spec:
-    selector:
-      name: zookeeper
-    ports:
-      - port: 2181
-        targetPort: 2181
-        name: zookeeper
-      - port: 2888
-        targetPort: 2888
-        name: server
-      - port: 3888
-        targetPort: 3888
-        name: leader-election
 - apiVersion: extensions/v1beta1
   kind: Deployment
   metadata:
-    name: zookeeper
-    labels:
-      name: zookeeper
+    name: strimzi-cluster-controller
   spec:
     replicas: 1
     template:
       metadata:
         labels:
-          name: zookeeper
+          name: strimzi-cluster-controller
       spec:
-        restartPolicy: Always
-        volumes:
-        - name: zookeeper-data
-          emptyDir: {}
-        - name: zookeeper-datalog
-          emptyDir: {}
+        serviceAccountName: openwhisk
         containers:
-        - name: zookeeper
-          image: projectodd/whisk_zookeeper:openshift-latest
-          imagePullPolicy: IfNotPresent
-          ports:
-          - name: zookeeper
-            containerPort: 2181
-          - name: server
-            containerPort: 2888
-          - name: leader-election
-            containerPort: 3888
-          volumeMounts:
-            - mountPath: /data
-              name: zookeeper-data
-            - mountPath: /datalog
-              name: zookeeper-datalog
+          - name: strimzi-cluster-controller
+            image: strimzi/cluster-controller:latest
+            env:
+              - name: STRIMZI_CONFIGMAP_LABELS
+                value: "strimzi.io/kind=cluster"
+              - name: STRIMZI_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
+            livenessProbe:
+              httpGet:
+                path: /healthy
+                port: 8080
+              initialDelaySeconds: 10
+              periodSeconds: 30
+            readinessProbe:
+              httpGet:
+                path: /ready
+                port: 8080
+              initialDelaySeconds: 10
+              periodSeconds: 30
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: strimzi-openwhisk
+    labels:
+      strimzi.io/type: kafka
+      strimzi.io/kind: cluster
+  data:
+    kafka-nodes: "${KAFKA_NODE_COUNT}"
+    kafka-image: "strimzi/kafka:latest"
+    kafka-healthcheck-delay: "15"
+    kafka-healthcheck-timeout: "5"
+    zookeeper-nodes: "${ZOOKEEPER_NODE_COUNT}"
+    zookeeper-image: "strimzi/zookeeper:latest"
+    zookeeper-healthcheck-delay: "15"
+    zookeeper-healthcheck-timeout: "5"
+    KAFKA_DEFAULT_REPLICATION_FACTOR: "${KAFKA_NODE_COUNT}"
+    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "${KAFKA_NODE_COUNT}"
+    KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "${KAFKA_NODE_COUNT}"
+    kafka-storage: |-
+      { "type": "ephemeral" }
+    zookeeper-storage: |-
+      { "type": "ephemeral" }
