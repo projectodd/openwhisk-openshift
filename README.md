@@ -66,8 +66,7 @@ avoid the validation error triggered by the self-signed cert in the
     wsk -i list
     wsk -i action invoke /whisk.system/utils/echo -p message hello -b
 
-Finally, all of the OpenWhisk resources can be shutdown by simply
-deleting the project:
+Finally, all of the OpenWhisk resources can be shutdown using the
+template:
 
-    oc delete project openwhisk
-
+    oc process -f template.yml | oc delete -f -
