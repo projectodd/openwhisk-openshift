@@ -249,7 +249,7 @@ objects:
   metadata:
     name: controller.config
   data:
-    controller_opts: ""
+    controller_opts: "-Dwhisk.spi.LoadBalancerProvider=whisk.core.loadBalancer.ShardingContainerPoolBalancer"
     java_opts: "${CONTROLLER_JAVA_OPTS}"
 - apiVersion: apps/v1beta1
   kind: StatefulSet
