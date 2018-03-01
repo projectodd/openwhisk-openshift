@@ -14,12 +14,17 @@ you can configure the `wsk` CLI to use your cluster:
     AUTH_SECRET=$(oc get secret whisk.auth -o yaml | grep "system:" | awk '{print $2}' | base64 --decode)
     wsk property set --auth $AUTH_SECRET --apihost $(oc get route/openwhisk --template={{.spec.host}})
 
-## Sensible defaults for larger clusters
+## Persistent data
 
-There are some sensible defaults for larger clusters in
+If you'd like for data to survive reboots, there's a
+`persistent-template.yml` that will setup PersistentVolumeClaims.
+
+## Sensible defaults for larger persistent clusters
+
+There are some sensible defaults for larger persistent clusters in
 [larger.env](larger.env) that you can use like so:
 
-    oc process -f template.yml --param-file=larger.env | oc create -f -
+    oc process -f persistent-template.yml --param-file=larger.env | oc create -f -
     
 ## Testing performance with `ab`
 

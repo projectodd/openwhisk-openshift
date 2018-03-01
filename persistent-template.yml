@@ -1,0 +1,1047 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: openwhisk
+labels:
+  template: openwhisk
+
+parameters:
+- name: CONTROLLER_INSTANCES
+  description: The desired number of controllers
+  value: "1"
+  required: true
+- name: CONTROLLER_MEMORY_LIMIT
+  description: The maximum container memory for each Controller
+  value: "512Mi"
+  required: true
+- name: CONTROLLER_JAVA_OPTS
+  description: JVM options to pass to the Controller - recommended to set at least Xmx here
+  value: "-Xmx256m"
+  required: true
+- name: CONTROLLER_HA
+  description: Boolean denoting whether HA mode
+  value: "FALSE"
+  required: true
+- name: CONTROLLER_LOCALBOOKKEEPING
+  description: Boolean denoting whether load balancer data is local or shared
+  value: "TRUE"
+  required: true
+- name: AKKA_CLUSTER_SEED_NODES
+  description: Hostnames of akka seed nodes
+  value: "controller-0.controller controller-1.controller"
+  required: true
+- name: INVOKER_INSTANCES
+  description: The desired number of invokers
+  value: "1"
+  required: true
+- name: INVOKER_MEMORY_LIMIT
+  description: The maximum container memory for each Invoker
+  value: "1Gi"
+  required: true
+- name: INVOKER_JAVA_OPTS
+  description: JVM options to pass to the Invoker - recommended to set at least Xmx here
+  value: "-Xmx512m"
+  required: true
+- name: INVOKER_MAX_CONTAINERS
+  description: Maximum function containers per Invoker
+  value: "8"
+  required: true
+- name: COUCHDB_MEMORY_LIMIT
+  description: The maximum container memory for each CouchDB
+  value: "512Mi"
+  required: true
+- name: COUCHDB_USER
+  description: CouchDB Username
+  generate: expression
+  from: "user[A-Z0-9]{3}"
+  required: true
+- name: COUCHDB_PASSWORD
+  description: CouchDB Password
+  generate: expression
+  from: "[a-zA-Z0-9]{16}"
+  required: true
+- name: ZOOKEEPER_NODE_COUNT
+  description: Number of Zookeper cluster nodes which will be deployed (odd number of nodes is recomended)
+  displayName: Number of Zookeper cluster nodes (odd number of nodes is recomended)
+  required: true
+  value: "1"
+- name: KAFKA_NODE_COUNT
+  description: Number of Kafka cluster nodes which will be deployed
+  displayName: Number of Kafka cluster nodes
+  required: true
+  value: "1"
+- name: ZOOKEEPER_VOLUME_CAPACITY
+  description: Volume space available for Zookeeper data, e.g. 512Mi, 2Gi.
+  displayName: Zookeeper Volume Capacity
+  required: true
+  value: 1Gi
+- name: KAFKA_VOLUME_CAPACITY
+  description: Volume space available for Kafka data, e.g. 512Mi, 2Gi.
+  displayName: Kafka Volume Capacity
+  required: true
+  value: 1Gi
+- name: WHISK_SYSTEM_AUTH
+  description: OpenWhisk Auth token for whisk.system account
+  generate: expression
+  from: "789c46b1-71f6-4ed5-8c54-816aa4f8c502:[a-zA-Z0-9]{64}"
+  required: true
+- name: WHISK_GUEST_AUTH
+  description: OpenWhisk Auth token for guest account
+  generate: expression
+  from: "23bc46b1-71f6-4ed5-8c54-816aa4f8c502:[a-zA-Z0-9]{64}"
+  required: true
+- name: WHISK_ACTIONS_INVOKES_CONCURRENT
+  description: Default number of concurrenct actions per user
+  value: "30"
+  required: true
+- name: WHISK_ACTIONS_INVOKES_CONCURRENT_IN_SYSTEM
+  description: Number of concurrent actions allowed across the entire system
+  value: "1000"
+  required: true
+- name: WHISK_ACTIONS_INVOKES_PER_MINUTE
+  description: Default number of action invocations per minute per user
+  value: "60"
+  required: true
+
+objects:
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: whisk.config
+  data:
+    whisk_cli_version_tag: latest
+    whisk_system_namespace: /whisk.system
+    whisk_version_date: 2018-01-01T00:00:00Z
+    whisk_version_name: OpenWhisk
+    whisk_version_tag: latest
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: null
+    name: whisk.limits
+  data:
+    actions_invokes_concurrent: "${WHISK_ACTIONS_INVOKES_CONCURRENT}"
+    actions_invokes_concurrentInSystem: "${WHISK_ACTIONS_INVOKES_CONCURRENT_IN_SYSTEM}"
+    actions_invokes_perMinute: "${WHISK_ACTIONS_INVOKES_PER_MINUTE}"
+    actions_sequence_maxLength: "50"
+    triggers_fires_perMinute: "60"
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: whisk.runtimes
+  data:
+    runtimes: |
+      {
+          "bypassPullForLocalImages": false,
+          "defaultImagePrefix": "openwhisk",
+          "defaultImageTag": "latest",
+          "runtimes": {
+              "nodejs": [
+                  {
+                      "kind": "nodejs",
+                      "image": {
+                          "name": "nodejsaction"
+                      },
+                      "deprecated": true
+                  },
+                  {
+                      "kind": "nodejs:6",
+                      "default": true,
+                      "image": {
+                          "name": "nodejs6action"
+                      },
+                      "deprecated": false
+                  },
+                  {
+                      "kind": "nodejs:8",
+                      "default": false,
+                      "image": {
+                          "name": "action-nodejs-v8"
+                      },
+                      "deprecated": false
+                  }
+              ],
+              "python": [
+                  {
+                      "kind": "python",
+                      "image": {
+                          "name": "python2action"
+                      },
+                      "deprecated": false
+                  },
+                  {
+                      "kind": "python:2",
+                      "default": true,
+                      "image": {
+                          "name": "python2action"
+                      },
+                      "deprecated": false
+                  },
+                  {
+                      "kind": "python:3",
+                      "image": {
+                          "name": "python3action"
+                      },
+                      "deprecated": false
+                  }
+              ],
+              "swift": [
+                  {
+                      "kind": "swift",
+                      "image": {
+                          "name": "swiftaction"
+                      },
+                      "deprecated": true
+                  },
+                  {
+                      "kind": "swift:3",
+                      "image": {
+                          "name": "swift3action"
+                      },
+                      "deprecated": true
+                  },
+                  {
+                      "kind": "swift:3.1.1",
+                      "default": true,
+                      "image": {
+                          "name": "action-swift-v3.1.1"
+                      },
+                      "deprecated": false
+                  }
+              ],
+              "java": [
+                  {
+                      "kind": "java",
+                      "default": true,
+                      "image": {
+                          "name": "java8action"
+                      },
+                      "deprecated": false,
+                      "attached": {
+                          "attachmentName": "jarfile",
+                          "attachmentType": "application/java-archive"
+                      },
+                      "sentinelledLogs": false,
+                      "requireMain": true
+                  }
+              ],
+              "php": [
+                  {
+                      "kind": "php:7.1",
+                      "default": true,
+                      "deprecated": false,
+                      "image": {
+                          "name": "action-php-v7.1"
+                      }
+                  }
+              ]
+          },
+          "blackboxes": [
+              {
+                  "name": "dockerskeleton"
+              }
+          ]
+      }
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: controller
+    labels:
+      name: controller
+  spec:
+    selector:
+      name: controller
+    clusterIP: None
+    ports:
+      - port: 8080
+        targetPort: 8080
+        name: http
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: controller.config
+  data:
+    controller_opts: "-Dwhisk.spi.LoadBalancerProvider=whisk.core.loadBalancer.ShardingContainerPoolBalancer"
+    java_opts: "${CONTROLLER_JAVA_OPTS}"
+- apiVersion: apps/v1beta1
+  kind: StatefulSet
+  metadata:
+    name: controller
+    labels:
+      name: controller
+  spec:
+    replicas: ${CONTROLLER_INSTANCES}
+    serviceName: "controller"
+    template:
+      metadata:
+        labels:
+          name: controller
+      spec:
+        restartPolicy: Always
+        containers:
+        - name: controller
+          imagePullPolicy: IfNotPresent
+          image: projectodd/controller:openshift-latest
+          command: ["/bin/bash", "-c", "COMPONENT_NAME=$(hostname | cut -d'-' -f2) /init.sh `hostname | cut -d'-' -f2`"]
+          ports:
+          - name: controller
+            containerPort: 8080
+          resources:
+            limits:
+              memory: ${CONTROLLER_MEMORY_LIMIT}
+          env:
+          # Properties for controller HA configuration
+          # Must change these if changing number of replicas
+          - name: "CONTROLLER_LOCALBOOKKEEPING"
+            value: ${CONTROLLER_LOCALBOOKKEEPING}
+          - name: "CONTROLLER_HA"
+            value: ${CONTROLLER_HA}
+          - name: "CONTROLLER_INSTANCES"
+            value: ${CONTROLLER_INSTANCES}
+          - name: "AKKA_CLUSTER_SEED_NODES"
+            value: ${AKKA_CLUSTER_SEED_NODES}
+          - name: "CONFIG_akka_actor_provider"
+            value: "cluster"
+  
+          # extra JVM arguments
+          - name: "JAVA_OPTS"
+            valueFrom:
+              configMapKeyRef:
+                name: controller.config
+                key: java_opts
+  
+          # extra controller arguments
+          - name: "CONTROLLER_OPTS"
+            valueFrom:
+              configMapKeyRef:
+                name: controller.config
+                key: controller_opts
+  
+          # action runtimes
+          - name: "RUNTIMES_MANIFEST"
+            valueFrom:
+              configMapKeyRef:
+                name: whisk.runtimes
+                key: runtimes
+  
+          # deployment version information
+          - name:  "WHISK_VERSION_NAME"
+            valueFrom:
+              configMapKeyRef:
+                name: whisk.config
+                key: whisk_version_name
+          - name:  "WHISK_VERSION_DATE"
+            valueFrom:
+              configMapKeyRef:
+                name: whisk.config
+                key: whisk_version_date
+          - name: "WHISK_VERSION_BUILDNO"
+            valueFrom:
+              configMapKeyRef:
+                name: whisk.config
+                key: whisk_version_tag
+  
+          # specify limits
+          - name: "LIMITS_ACTIONS_INVOKES_PERMINUTE"
+            valueFrom:
+              configMapKeyRef:
+                name: whisk.limits
+                key: actions_invokes_perMinute
+          - name: "LIMITS_ACTIONS_INVOKES_CONCURRENT"
+            valueFrom:
+              configMapKeyRef:
+                name: whisk.limits
+                key: actions_invokes_concurrent
+          - name: "LIMITS_ACTIONS_INVOKES_CONCURRENTINSYSTEM"
+            valueFrom:
+              configMapKeyRef:
+                name: whisk.limits
+                key: actions_invokes_concurrentInSystem
+          - name: "LIMITS_TRIGGERS_FIRES_PERMINUTE"
+            valueFrom:
+              configMapKeyRef:
+                name: whisk.limits
+                key: triggers_fires_perMinute
+          - name: "LIMITS_ACTIONS_SEQUENCE_MAXLENGTH"
+            valueFrom:
+              configMapKeyRef:
+                name: whisk.limits
+                key: actions_sequence_maxLength
+  
+          # properties for Kafka connection
+          - name: "KAFKA_HOSTS"
+            value: "$(STRIMZI_OPENWHISK_KAFKA_SERVICE_HOST):$(STRIMZI_OPENWHISK_KAFKA_SERVICE_PORT_CLIENTS)"
+  
+          # properties for DB connection
+          - name: "DB_USERNAME"
+            valueFrom:
+              secretKeyRef:
+                name: db.auth
+                key: db_username
+          - name: "DB_PASSWORD"
+            valueFrom:
+              secretKeyRef:
+                name: db.auth
+                key: db_password
+          - name:  "DB_PROTOCOL"
+            valueFrom:
+              configMapKeyRef:
+                name: db.config
+                key: db_protocol
+          - name: "DB_HOST"
+            value: "$(COUCHDB_SERVICE_HOST)"
+          - name: "DB_PORT"
+            value: "$(COUCHDB_SERVICE_PORT_COUCHDB)"
+          - name: "DB_PROVIDER"
+            valueFrom:
+              configMapKeyRef:
+                name: db.config
+                key: db_provider
+          - name: "DB_WHISK_ACTIVATIONS"
+            valueFrom:
+              configMapKeyRef:
+                name: db.config
+                key: db_whisk_activations
+          - name: "DB_WHISK_ACTIONS"
+            valueFrom:
+              configMapKeyRef:
+                name: db.config
+                key: db_whisk_actions
+          - name: "DB_WHISK_AUTHS"
+            valueFrom:
+              configMapKeyRef:
+                name: db.config
+                key: db_whisk_auths
+  
+          # must match port used in livenessProbe below
+          - name: "PORT"
+            value: "8080"
+  
+          livenessProbe:
+            httpGet:
+              path: "/ping"
+              port: 8080
+              scheme: "HTTP"
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: "/ping"
+              port: 8080
+              scheme: "HTTP"
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 10
+            failureThreshold: 5
+        initContainers:
+        - name: wait-for-services
+          image: busybox
+          command: ['sh', '-cu', 'echo "$COUCHDB_SERVICE_HOST $STRIMZI_OPENWHISK_KAFKA_SERVICE_HOST"']
+        - name: wait-for-couchdb
+          image: busybox
+          command: ['sh', '-c', 'until wget -T 5 --spider http://${COUCHDB_SERVICE_HOST}:${COUCHDB_SERVICE_PORT}/_all_dbs; do echo waiting for couchdb; sleep 2; done;']
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: install-catalog
+  spec:
+    activeDeadlineSeconds: 600
+    template:
+      metadata:
+        name: install-catalog
+      spec:
+        containers:
+        - name: catalog
+          image: projectodd/whisk_catalog:openshift-latest
+          env:
+            - name: "WHISK_CLI_VERSION"
+              valueFrom:
+                configMapKeyRef:
+                  name: whisk.config
+                  key: whisk_cli_version_tag
+            - name: "WHISK_AUTH"
+              valueFrom:
+                secretKeyRef:
+                  name: whisk.auth
+                  key: system
+            - name: "WHISK_API_HOST_NAME"
+              value: "http://controller:8080"
+        initContainers:
+        - name: wait-for-controller
+          image: busybox
+          command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
+        restartPolicy: Never
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: couchdb
+    labels:
+      name: couchdb
+  spec:
+    selector:
+      name: couchdb
+    ports:
+      - port: 5984
+        targetPort: 5984
+        name: couchdb
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: db.config
+  data:
+    db_prefix: test_
+    db_protocol: http
+    db_provider: CouchDB
+    db_whisk_actions: test_whisks
+    db_whisk_activations: test_activations
+    db_whisk_auths: test_subjects
+- apiVersion: extensions/v1beta1
+  kind: Deployment
+  metadata:
+    name: couchdb
+    labels:
+      name: couchdb
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          name: couchdb
+      spec:
+        restartPolicy: Always
+        volumes:
+        - name: couchdb-data
+          emptyDir: {}
+        containers:
+        - name: couchdb
+          imagePullPolicy: IfNotPresent
+          image: projectodd/whisk_couchdb:openshift-latest
+          command: ["/init.sh"]
+          ports:
+          - name: couchdb
+            containerPort: 5984
+          resources:
+            limits:
+              memory: ${COUCHDB_MEMORY_LIMIT}
+          env:
+          - name: "DB_PREFIX"
+            valueFrom:
+              configMapKeyRef:
+                name: db.config
+                key: db_prefix
+          - name: "DB_HOST"
+            value: "127.0.0.1"
+          - name: "COUCHDB_USER"
+            valueFrom:
+              secretKeyRef:
+                name: db.auth
+                key: db_username
+          - name: "COUCHDB_PASSWORD"
+            valueFrom:
+              secretKeyRef:
+                name: db.auth
+                key: db_password
+          - name: "DB_PORT"
+            value: "5984"
+          - name: "NODENAME"
+            value: "couchdb0"
+          - name: "AUTH_WHISK_SYSTEM"
+            valueFrom:
+              secretKeyRef:
+                name: whisk.auth
+                key: system
+          - name: "AUTH_GUEST"
+            valueFrom:
+              secretKeyRef:
+                name: whisk.auth
+                key: guest
+          volumeMounts:
+          - name: couchdb-data
+            mountPath: "/opt/couchdb/data"
+          readinessProbe:
+            httpGet:
+              port: 5984
+              # Tempting to say "/$(DB_PREFIX)_activations", but probe runs
+              # externally, therefore can't access the container environment...
+              path: "/test_activations"
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 10
+            timeoutSeconds: 1
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: invoker.config
+  data:
+    docker_image_prefix: projectodd
+    docker_image_tag: openshift-latest
+    docker_registry: ""
+    invoker_container_dns: ""
+    invoker_container_network: bridge
+    invoker_logs_dir: ""
+    invoker_opts: "-Dwhisk.spi.ContainerFactoryProvider=whisk.core.containerpool.kubernetes.KubernetesContainerFactoryProvider"
+    invoker_use_runc: "false"
+    java_opts: "${INVOKER_JAVA_OPTS}"
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: invoker
+  data:
+    init: |
+      export COMPONENT_NAME=$(hostname | cut -d'-' -f2)
+      # Dynamically determine API gateway host
+      export TOKEN="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)"
+      export NAMESPACE="$(cat /run/secrets/kubernetes.io/serviceaccount/namespace)"
+      export APIGW_HOST=$(curl -s --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt -H "Authorization: Bearer ${TOKEN}" "https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/oapi/v1/namespaces/${NAMESPACE}/routes/openwhisk?pretty=true" | grep '"host":' | head -n 1 | awk -F '"' '{print $4}')
+      export APIGW_HOST_V2=${APIGW_HOST}
+      export WHISK_API_HOST_NAME=${APIGW_HOST}
+      exec /init.sh
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: openwhisk
+- apiVersion: v1
+  kind: RoleBinding
+  metadata:
+    name: openwhisk
+  roleRef:
+    name: edit
+  subjects:
+    - kind: ServiceAccount
+      name: openwhisk
+- apiVersion: apps/v1beta1
+  kind: StatefulSet
+  metadata:
+    name: invoker
+    labels:
+      name: invoker
+  spec:
+    replicas: ${INVOKER_INSTANCES}
+    serviceName: "invoker"
+    template:
+      metadata:
+        labels:
+          name: invoker
+      spec:
+        restartPolicy: Always
+        volumes:
+        - name: invoker-config
+          configMap:
+            name: invoker
+        serviceAccountName: openwhisk
+  
+        initContainers:
+        - name: wait-for-services
+          image: busybox
+          command: ['sh', '-cu', 'echo "$COUCHDB_SERVICE_HOST $STRIMZI_OPENWHISK_ZOOKEEPER_SERVICE_HOST $STRIMZI_OPENWHISK_KAFKA_SERVICE_HOST"']
+        - name: wait-for-controller
+          image: busybox
+          command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
+  
+        containers:
+        - name: invoker
+          imagePullPolicy: IfNotPresent
+          image: projectodd/invoker:openshift-latest
+          command: [ "/bin/bash", "-o", "allexport", "/invoker_config/init" ]
+          ports:
+          - name: invoker
+            containerPort: 8080
+          resources:
+            limits:
+              memory: ${INVOKER_MEMORY_LIMIT}
+          volumeMounts:
+          - name: invoker-config
+            mountPath: "/invoker_config"
+          env:
+            - name: "PORT"
+              value: "8080"
+  
+            # Invoker name is name of the Kube node when using DaemonSet
+            - name: "INVOKER_NAME"
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+  
+            # Docker-related options
+            - name: "INVOKER_CONTAINER_NETWORK"
+              valueFrom:
+                configMapKeyRef:
+                  name: invoker.config
+                  key: invoker_container_network
+            - name: "INVOKER_CONTAINER_DNS"
+              valueFrom:
+                configMapKeyRef:
+                  name: invoker.config
+                  key: invoker_container_dns
+            - name: "INVOKER_USE_RUNC"
+              valueFrom:
+                configMapKeyRef:
+                  name: invoker.config
+                  key: invoker_use_runc
+            - name: "INVOKER_CORESHARE"
+              value: "1"
+            - name: "INVOKER_NUMCORE"
+              value: "${INVOKER_MAX_CONTAINERS}"
+            - name: "DOCKER_IMAGE_PREFIX"
+              valueFrom:
+                configMapKeyRef:
+                  name: invoker.config
+                  key: docker_image_prefix
+            - name: "DOCKER_IMAGE_TAG"
+              valueFrom:
+                configMapKeyRef:
+                  name: invoker.config
+                  key: docker_image_tag
+            - name: "DOCKER_REGISTRY"
+              valueFrom:
+                configMapKeyRef:
+                  name: invoker.config
+                  key: docker_registry
+  
+            # action runtimes
+            - name: "RUNTIMES_MANIFEST"
+              valueFrom:
+                configMapKeyRef:
+                  name: whisk.runtimes
+                  key: runtimes
+  
+            # extra JVM arguments
+            - name: "JAVA_OPTS"
+              valueFrom:
+                configMapKeyRef:
+                  name: invoker.config
+                  key: java_opts
+  
+            # extra Invoker arguments
+            - name: "INVOKER_OPTS"
+              valueFrom:
+                configMapKeyRef:
+                  name: invoker.config
+                  key: invoker_opts
+  
+            # Recommend using "" because logs should go to stdout on kube
+            - name: "WHISK_LOGS_DIR"
+              valueFrom:
+                configMapKeyRef:
+                  name: invoker.config
+                  key: invoker_logs_dir
+  
+            # properties for Kafka connection
+            - name: "KAFKA_HOSTS"
+              value: "$(STRIMZI_OPENWHISK_KAFKA_SERVICE_HOST):$(STRIMZI_OPENWHISK_KAFKA_SERVICE_PORT_CLIENTS)"
+  
+            # properties for zookeeper connection
+            - name: "ZOOKEEPER_HOSTS"
+              value: "$(STRIMZI_OPENWHISK_ZOOKEEPER_SERVICE_HOST):$(STRIMZI_OPENWHISK_ZOOKEEPER_SERVICE_PORT_CLIENTS)"
+  
+            # properties for DB connection
+            - name: "DB_USERNAME"
+              valueFrom:
+                secretKeyRef:
+                  name: db.auth
+                  key: db_username
+            - name: "DB_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: db.auth
+                  key: db_password
+            - name:  "DB_PROTOCOL"
+              valueFrom:
+                configMapKeyRef:
+                  name: db.config
+                  key: db_protocol
+            - name: "DB_HOST"
+              value: "$(COUCHDB_SERVICE_HOST)"
+            - name: "DB_PORT"
+              value: "$(COUCHDB_SERVICE_PORT_COUCHDB)"
+            - name: "DB_PROVIDER"
+              valueFrom:
+                configMapKeyRef:
+                  name: db.config
+                  key: db_provider
+            - name: "DB_WHISK_ACTIVATIONS"
+              valueFrom:
+                configMapKeyRef:
+                  name: db.config
+                  key: db_whisk_activations
+            - name: "DB_WHISK_ACTIONS"
+              valueFrom:
+                configMapKeyRef:
+                  name: db.config
+                  key: db_whisk_actions
+            - name: "DB_WHISK_AUTHS"
+              valueFrom:
+                configMapKeyRef:
+                  name: db.config
+                  key: db_whisk_auths
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: preload-openwhisk-runtimes
+    labels:
+      name: preload-openwhisk-runtimes
+  spec:
+    completions: 1
+    serviceAccountName: openwhisk
+    template:
+      metadata:
+        labels:
+          name: preload-openwhisk-runtimes
+      spec:
+        restartPolicy: Never
+        initContainers:
+        - name: preload-openwhisk-nodejs6
+          image: projectodd/nodejs6action:openshift-latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c", "echo", "success"]
+        - name: preload-openwhisk-java8
+          image: projectodd/java8action:openshift-latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c", "echo", "success"]
+        - name: preload-openwhisk-python3
+          image: projectodd/python3action:openshift-latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c", "echo", "success"]
+        - name: preload-openwhisk-python2
+          image: projectodd/python2action:openshift-latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c", "echo", "success"]
+        containers:
+        - name: preload-openwhisk-swift3
+          image: projectodd/swift3action:openshift-latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c", "echo", "success"]
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: nginx
+    labels:
+      name: nginx
+  spec:
+    type: NodePort
+    selector:
+      name: nginx
+    ports:
+      - port: 80
+        targetPort: 8080
+        name: http
+      - port: 8443
+        targetPort: 8443
+        name: https-admin
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: openwhisk
+    labels:
+      name: nginx
+  spec:
+    port:
+      targetPort: http
+    to:
+      kind: Service
+      name: nginx
+      weight: 100
+    wildcardPolicy: None
+    tls:
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: nginx
+  data:
+    nginx.conf: |
+      worker_rlimit_nofile 4096;
+  
+      events {
+          worker_connections  4096;
+      }
+  
+      http {
+          client_max_body_size 50M;
+  
+          rewrite_log on;
+          log_format combined-upstream '$remote_addr - $remote_user [$time_local] '
+              '$request $status $body_bytes_sent '
+              '$http_referer $http_user_agent $upstream_addr';
+          access_log /logs/nginx_access.log combined-upstream;
+
+          proxy_http_version 1.1;
+          proxy_set_header Connection "";
+  
+          server {
+              listen 8080 default;
+  
+              # match namespace, note while OpenWhisk allows a richer character set for a
+              # namespace, not all those characters are permitted in the (sub)domain name;
+              # if namespace does not match, no vanity URL rewriting takes place.
+              server_name ~^(?<namespace>[0-9a-zA-Z-]+)\.localhost$;
+  
+              # proxy to the web action path
+              location / {
+                  if ($namespace) {
+                    rewrite    /(.*) /api/v1/web/${namespace}/$1 break;
+                  }
+                  proxy_pass http://controller:8080;
+                  proxy_read_timeout 75s; # 70+5 additional seconds to allow controller to terminate request
+              }
+  
+              # proxy to 'public/html' web action by convention
+              location = / {
+                  if ($namespace) {
+                    rewrite    ^ /api/v1/web/${namespace}/public/index.html break;
+                  }
+                  proxy_pass http://controller:8080;
+                  proxy_read_timeout 75s; # 70+5 additional seconds to allow controller to terminate request
+              }
+  
+              location /blackbox.tar.gz {
+                  return 301 https://github.com/apache/incubator-openwhisk-runtime-docker/releases/download/sdk%400.1.0/blackbox-0.1.0.tar.gz;
+              }
+              # leaving this for a while for clients out there to update to the new endpoint
+              location /blackbox-0.1.0.tar.gz {
+                  return 301 /blackbox.tar.gz;
+              }
+  
+              location /OpenWhiskIOSStarterApp.zip {
+                  return 301 https://github.com/openwhisk/openwhisk-client-swift/releases/download/0.2.3/starterapp-0.2.3.zip;
+              }
+  
+              # redirect requests for specific binaries to the matching one from the latest openwhisk-cli release.
+              location /cli/go/download/linux/amd64 {
+                  return 301 https://github.com/apache/incubator-openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-linux-amd64.tgz;
+              }
+              location /cli/go/download/linux/386 {
+                  return 301 https://github.com/apache/incubator-openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-linux-386.tgz;
+              }
+              location /cli/go/download/mac/amd64 {
+                  return 301 https://github.com/apache/incubator-openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-mac-amd64.zip;
+              }
+              location /cli/go/download/mac/386 {
+                  return 301 https://github.com/apache/incubator-openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-mac-386.zip;
+              }
+              location /cli/go/download/windows/amd64 {
+                  return 301 https://github.com/apache/incubator-openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-windows-amd64.zip;
+              }
+              location /cli/go/download/windows/386 {
+                  return 301 https://github.com/apache/incubator-openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-windows-386.zip;
+              }
+  
+              # redirect top-level cli downloads to the latest openwhisk-cli release.
+              location /cli/go/download {
+                  return 301 https://github.com/apache/incubator-openwhisk-cli/releases/latest;
+               }
+          }
+      }
+- apiVersion: extensions/v1beta1
+  kind: Deployment
+  metadata:
+    name: nginx
+    labels:
+      name: nginx
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          name: nginx
+      spec:
+        restartPolicy: Always
+        volumes:
+        - name: nginx-conf
+          configMap:
+            name: nginx
+        - name: logs
+          emptyDir: {}
+        containers:
+        - name: nginx
+          imagePullPolicy: IfNotPresent
+          image: projectodd/whisk_nginx:openshift-latest
+          ports:
+          - name: http
+            containerPort: 8080
+          - name: https-admin
+            containerPort: 8443
+          volumeMounts:
+          - name: nginx-conf
+            mountPath: "/etc/nginx/nginx.conf"
+            subPath: "nginx.conf"
+          - name: logs
+            mountPath: "/logs"
+        initContainers:
+        - name: wait-for-controller
+          image: busybox
+          command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: whisk.auth
+  stringData:
+    guest: "${WHISK_GUEST_AUTH}"
+    system: "${WHISK_SYSTEM_AUTH}"
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: db.auth
+  stringData:
+    db_username: "${COUCHDB_USER}"
+    db_password: "${COUCHDB_PASSWORD}"
+- apiVersion: extensions/v1beta1
+  kind: Deployment
+  metadata:
+    name: strimzi-cluster-controller
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          name: strimzi-cluster-controller
+      spec:
+        serviceAccountName: openwhisk
+        containers:
+          - name: strimzi-cluster-controller
+            image: strimzi/cluster-controller:latest
+            env:
+              - name: STRIMZI_CONFIGMAP_LABELS
+                value: "strimzi.io/kind=cluster"
+              - name: STRIMZI_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
+            livenessProbe:
+              httpGet:
+                path: /healthy
+                port: 8080
+              initialDelaySeconds: 10
+              periodSeconds: 30
+            readinessProbe:
+              httpGet:
+                path: /ready
+                port: 8080
+              initialDelaySeconds: 10
+              periodSeconds: 30
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: strimzi-openwhisk
+    labels:
+      strimzi.io/type: kafka
+      strimzi.io/kind: cluster
+  data:
+    kafka-nodes: "${KAFKA_NODE_COUNT}"
+    kafka-image: "strimzi/kafka:latest"
+    kafka-healthcheck-delay: "15"
+    kafka-healthcheck-timeout: "5"
+    zookeeper-nodes: "${ZOOKEEPER_NODE_COUNT}"
+    zookeeper-image: "strimzi/zookeeper:latest"
+    zookeeper-healthcheck-delay: "15"
+    zookeeper-healthcheck-timeout: "5"
+    KAFKA_DEFAULT_REPLICATION_FACTOR: "${KAFKA_NODE_COUNT}"
+    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "${KAFKA_NODE_COUNT}"
+    KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "${KAFKA_NODE_COUNT}"
+    kafka-storage: |-
+      { "type": "persistent-claim", "size": "${KAFKA_VOLUME_CAPACITY}", "delete-claim": false }
+    zookeeper-storage: |-
+      { "type": "persistent-claim", "size": "${ZOOKEEPER_VOLUME_CAPACITY}", "delete-claim": false }
