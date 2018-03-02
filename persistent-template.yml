@@ -511,7 +511,7 @@ objects:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 40Gi
+        storage: ${COUCHDB_VOLUME_CAPACITY}
 - apiVersion: extensions/v1beta1
   kind: Deployment
   metadata:
