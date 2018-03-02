@@ -1,9 +1,19 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: openwhisk
+  name: openwhisk-persistent
+  annotations:
+    openshift.io/display-name: Apache OpenWhisk (Persistent)
+    description: Apache OpenWhisk serverless platform, with persistent storage. You can leave all parameters blank and sensible defaults will be used.
+    iconClass: icon-apache
+    tags: serverless, openwhisk
+    openshift.io/long-description: This template provides a small OpenWhisk installation. Data is stored on persistent storage.
+    openshift.io/provider-display-name: Red Hat, Inc.
+    openshift.io/documentation-url: https://github.com/projectodd/openwhisk-openshift/
+    openshift.io/support-url: https://github.com/projectodd/openwhisk-openshift/issues
+message: "To get started download the `wsk` CLI from https://github.com/apache/incubator-openwhisk-cli/releases/\n\nYour OpenWhisk authentication token: ${WHISK_SYSTEM_AUTH}\n\nYour OpenWhisk api endpoint can be found in the console UI after closing the template wizard.\n\nConfigure your `wsk` client with `wsk property set --auth <your_auth> --apihost <your_apihost>`"
 labels:
-  template: openwhisk
+  template: openwhisk-persistent-template
 
 parameters:
 - name: CONTROLLER_INSTANCES
@@ -295,6 +305,8 @@ objects:
   kind: StatefulSet
   metadata:
     name: controller
+    annotations:
+      template.alpha.openshift.io/wait-for-ready: "true"
     labels:
       name: controller
   spec:
@@ -873,6 +885,8 @@ objects:
   kind: Route
   metadata:
     name: openwhisk
+    annotations:
+      template.openshift.io/expose-apihost: "{.spec.host}"
     labels:
       name: nginx
   spec:
@@ -989,6 +1003,8 @@ objects:
   kind: Deployment
   metadata:
     name: nginx
+    annotations:
+      template.alpha.openshift.io/wait-for-ready: "true"
     labels:
       name: nginx
   spec:
@@ -1033,6 +1049,8 @@ objects:
   kind: Secret
   metadata:
     name: whisk.auth
+    annotations:
+      template.openshift.io/expose-auth: "{.data['system']}"
   stringData:
     guest: "${WHISK_GUEST_AUTH}"
     system: "${WHISK_SYSTEM_AUTH}"
