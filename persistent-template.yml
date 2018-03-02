@@ -609,7 +609,7 @@ objects:
       export COMPONENT_NAME=$(hostname | cut -d'-' -f2)
       # Dynamically determine API gateway host
       export TOKEN="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)"
-      export NAMESPACE="$(cat /run/secrets/kubernetes.io/serviceaccount/namespace)"
+      export NAMESPACE="$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)"
       export APIGW_HOST=$(curl -s --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt -H "Authorization: Bearer ${TOKEN}" "https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/oapi/v1/namespaces/${NAMESPACE}/routes/openwhisk?pretty=true" | grep '"host":' | head -n 1 | awk -F '"' '{print $4}')
       export APIGW_HOST_V2=${APIGW_HOST}
       export WHISK_API_HOST_NAME=${APIGW_HOST}
