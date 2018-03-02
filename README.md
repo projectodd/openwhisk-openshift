@@ -128,3 +128,42 @@ This issue might be happening if running on ZSH, in which case you need to doubl
     openwhisk-openwhisk.192.168.64.8.nip.io
 
 So, to fix the error amend the command to set `apihost` accordingly.
+
+### Catalog of actions empty
+
+You can inspect the catalog of actions by calling `wsk action list`.
+It might happen that after installing OpenWhisk there is only a single action:
+
+    $ wsk action list
+    actions
+    /whisk.system/invokerHealthTestAction0                                 private
+
+If that happens, chances are that the default action catalog was not installed properly.
+This could be due to the installation process being slow, e.g.
+
+    $ oc get job
+    NAME                         DESIRED   SUCCESSFUL   AGE
+    install-catalog              1         0            1d
+    preload-openwhisk-runtimes   1         1            1d
+
+To get back the catalog, delete and execute the job again.
+This can be done by extracting the `install-catalog` definition into a separate file and executing it again:
+
+    $ oc delete job install-catalog
+    job "install-catalog" deleted
+    $ oc create -f install-catalog.yml
+    job "install-catalog" created
+    $ oc get pods
+    NAME                               READY     STATUS      RESTARTS   AGE
+    ...
+    install-catalog-gj7r6              0/1       Completed   0          30s
+
+Finally, retrieve the action list again:
+
+    $ wsk action list
+    actions
+    /whisk.system/samples/greeting                                         private nodejs:6
+    /whisk.system/watson-speechToText/speechToText                         private nodejs:6
+    /whisk.system/weather/forecast                                         private nodejs:6
+    /whisk.system/watson-textToSpeech/textToSpeech                         private nodejs:6
+    ...
