@@ -891,6 +891,11 @@ objects:
   metadata:
     name: nginx
   data:
+    init: |
+      cp /nginx_config/nginx.conf /tmp/nginx.conf
+      sed -i "s/<kubernetes_service_host>/${KUBERNETES_SERVICE_HOST}/" /tmp/nginx.conf
+      sed -i "s/<kubernetes_namespace>/${KUBERNETES_NAMESPACE}/" /tmp/nginx.conf
+      exec nginx -c /tmp/nginx.conf -g "daemon off;"
     nginx.conf: |
       worker_rlimit_nofile 4096;
   
@@ -912,6 +917,12 @@ objects:
   
           server {
               listen 8080 default;
+
+              # Make sure nginx dynamically resolves dns entries
+              # instead of resolving once and caching that result
+              # forever
+              resolver <kubernetes_service_host>;
+              set $controller controller.<kubernetes_namespace>.svc.cluster.local;
   
               # match namespace, note while OpenWhisk allows a richer character set for a
               # namespace, not all those characters are permitted in the (sub)domain name;
@@ -923,7 +934,7 @@ objects:
                   if ($namespace) {
                     rewrite    /(.*) /api/v1/web/${namespace}/$1 break;
                   }
-                  proxy_pass http://controller:8080;
+                  proxy_pass http://$controller:8080;
                   proxy_read_timeout 75s; # 70+5 additional seconds to allow controller to terminate request
               }
   
@@ -932,7 +943,7 @@ objects:
                   if ($namespace) {
                     rewrite    ^ /api/v1/web/${namespace}/public/index.html break;
                   }
-                  proxy_pass http://controller:8080;
+                  proxy_pass http://$controller:8080;
                   proxy_read_timeout 75s; # 70+5 additional seconds to allow controller to terminate request
               }
   
@@ -998,6 +1009,12 @@ objects:
         - name: nginx
           imagePullPolicy: IfNotPresent
           image: projectodd/whisk_nginx:openshift-latest
+          command: [ "/bin/bash", "-o", "allexport", "/nginx_config/init" ]
+          env:
+          - name: KUBERNETES_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
           ports:
           - name: http
             containerPort: 8080
@@ -1005,8 +1022,7 @@ objects:
             containerPort: 8443
           volumeMounts:
           - name: nginx-conf
-            mountPath: "/etc/nginx/nginx.conf"
-            subPath: "nginx.conf"
+            mountPath: "/nginx_config"
           - name: logs
             mountPath: "/logs"
         initContainers:
