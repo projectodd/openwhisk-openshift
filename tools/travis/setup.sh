@@ -21,6 +21,9 @@ tar xvzOf openshift-origin-client-tools-v$OPENSHIFT_VERSION-$OPENSHIFT_COMMIT-li
 sudo mv oc.bin /usr/local/bin/oc
 sudo chmod 755 /usr/local/bin/oc
 
+docker pull strimzi/zookeeper:latest
+docker pull strimzi/kafka:latest
+
 # Start OpenShift
 oc cluster up
 
