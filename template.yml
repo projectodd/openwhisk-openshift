@@ -1012,6 +1012,15 @@ objects:
                 port: 8080
               initialDelaySeconds: 10
               periodSeconds: 30
+        initContainers:
+        - name: preload-strimzi-zookeeper
+          image: strimzi/zookeeper:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c", "echo", "success"]
+        - name: preload-strimzi-kafka
+          image: strimzi/kafka:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c", "echo", "success"]
 - apiVersion: v1
   kind: ConfigMap
   metadata:
