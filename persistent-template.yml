@@ -674,11 +674,11 @@ objects:
             - name: "PORT"
               value: "8080"
   
-            # Invoker name is name of the Kube node when using DaemonSet
+            # Generate stable invoker names from the StatefulSet names
             - name: "INVOKER_NAME"
               valueFrom:
                 fieldRef:
-                  fieldPath: spec.nodeName
+                  fieldPath: metadata.name
   
             # Docker-related options
             - name: "INVOKER_CONTAINER_NETWORK"
