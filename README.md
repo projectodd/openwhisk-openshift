@@ -4,17 +4,21 @@
 [![Build Status](https://travis-ci.org/projectodd/openwhisk-openshift.svg?branch=master)](https://travis-ci.org/projectodd/openwhisk-openshift)
 
 The following command will deploy OpenWhisk in your OpenShift project
-using the latest template in this repo:
+using the latest ephemeral template in this repo:
 
     oc process -f https://git.io/openwhisk-template | oc create -f -
 
 The shortened URL redirects to https://raw.githubusercontent.com/projectodd/openwhisk-openshift/master/template.yml
 
 It'll take a few minutes, but once all the pods are running/completed,
-you can configure the `wsk` CLI to use your cluster:
+the system is ready when the controller recognizes the invoker as
+healthy:
 
-    AUTH_SECRET=$(oc get secret whisk.auth -o yaml | grep "system:" | awk '{print $2}' | base64 --decode)
-    wsk property set --auth $AUTH_SECRET --apihost $(oc get route/openwhisk --template={{.spec.host}})
+    oc logs -f controller-0 | grep "invoker status changed"
+
+You should see a message like `invoker status changed to 0 -> Healthy`
+
+To use your cluster, see [below](#configuring-wsk)
 
 ## Persistent data
 
@@ -62,9 +66,14 @@ healthy:
     oc logs -f controller-0 | grep "invoker status changed"
 
 You should see a message like `invoker status changed to 0 ->
-Healthy`, at which point you can test the system with your `wsk`
-binary (download from
-https://github.com/apache/incubator-openwhisk-cli/releases/):
+Healthy`
+
+## Configuring `wsk`
+
+Once your cluster is ready, you need to configure your `wsk` binary.
+If necessary, download a recent one from
+https://github.com/apache/incubator-openwhisk-cli/releases/, ensure
+it's in your PATH, and:
 
     AUTH_SECRET=$(oc get secret whisk.auth -o yaml | grep "system:" | awk '{print $2}' | base64 --decode)
     wsk property set --auth $AUTH_SECRET --apihost $(oc get route/openwhisk --template={{.spec.host}})
@@ -76,7 +85,9 @@ avoid the validation error triggered by the self-signed cert in the
     wsk -i list
     wsk -i action invoke /whisk.system/utils/echo -p message hello -b
 
-Finally, all of the OpenWhisk resources can be shutdown using the
+## Shutting down the cluster
+
+All of the OpenWhisk resources can be shutdown gracefully using the
 template:
 
     oc process -f template.yml | oc delete -f -
