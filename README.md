@@ -167,3 +167,35 @@ Finally, retrieve the action list again:
     /whisk.system/weather/forecast                                         private nodejs:6
     /whisk.system/watson-textToSpeech/textToSpeech                         private nodejs:6
     ...
+
+### `The requested resource does not exist` when creating an action
+
+It might happen that when creating an action you get an error that the requested resource does not exist:
+
+    $ wsk -i action create md5hasher target/maven-java.jar --main org.apache.openwhisk.example.maven.App
+    error: Unable to create action 'md5hasher': The requested resource does not exist. (code 619)
+
+If this happens, it could be that the API host is incorrect.
+So, start by inspecting the property values:
+
+    $ wsk property get
+    client cert
+    Client key
+    whisk auth                  789c46b1-...
+    whisk API host              http://openwhisk-openwhisk.192.168.64.8.nip.io
+    whisk API version           v1
+    whisk namespace             _
+    whisk CLI version           2018-02-28T21:13:48.864+0000
+    whisk API build             2018-01-01T00:00:00Z
+    whisk API build number      latest
+
+API host should only contain the host name, no `http://` in front.
+Fix it by resetting the API host:
+
+    $ wsk property set --apihost openwhisk-openwhisk.192.168.64.8.nip.io
+    ok: whisk API host set to openwhisk-openwhisk.192.168.64.8.nip.io
+
+Now try adding the action again:
+
+    $ wsk -i action create md5hasher target/maven-java.jar --main org.apache.openwhisk.example.maven.App
+    ok: created action md5hasher
