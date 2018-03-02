@@ -443,7 +443,7 @@ objects:
         initContainers:
         - name: wait-for-services
           image: busybox
-          command: ['sh', '-cu', 'echo "$COUCHDB_SERVICE_HOST $STRIMZI_OPENWHISK_KAFKA_SERVICE_HOST"']
+          command: ['sh', '-cu', 'until nslookup couchdb && nslookup strimzi-openwhisk-kafka; do echo waiting for services; sleep 1; done']
         - name: wait-for-couchdb
           image: busybox
           command: ['sh', '-c', 'until wget -T 5 --spider http://${COUCHDB_SERVICE_HOST}:${COUCHDB_SERVICE_PORT}/_all_dbs; do echo waiting for couchdb; sleep 2; done;']
@@ -651,7 +651,7 @@ objects:
         initContainers:
         - name: wait-for-services
           image: busybox
-          command: ['sh', '-cu', 'echo "$COUCHDB_SERVICE_HOST $STRIMZI_OPENWHISK_ZOOKEEPER_SERVICE_HOST $STRIMZI_OPENWHISK_KAFKA_SERVICE_HOST"']
+          command: ['sh', '-cu', 'until nslookup couchdb && nslookup strimzi-openwhisk-zookeeper && nslookup strimzi-openwhisk-kafka; do echo waiting for services; sleep 1; done']
         - name: wait-for-controller
           image: busybox
           command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
