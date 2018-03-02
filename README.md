@@ -106,3 +106,25 @@ URL.
 
     oc process -f template.yml | oc delete -f -
     oc delete all -l template=openwhisk
+
+## Common Problems
+
+### Runtime error when setting `apihost` for `wsk`
+
+Example:
+
+    $ wsk property set --auth $AUTH_SECRET --apihost http://$(oc get route/openwhisk --template={{.spec.host}})                                                                                             ⏎
+    runtime error: invalid memory address or nil pointer dereference
+    Application exited unexpectedly
+
+If this happens, try checking the output of `oc get route` separately:
+
+    $ oc get route/openwhisk --template={{.spec.host}}
+    }%
+
+This issue might be happening if running on ZSH, in which case you need to double quote the value in template:
+
+    $ oc get route/openwhisk --template="{{.spec.host}}"
+    openwhisk-openwhisk.192.168.64.8.nip.io
+
+So, to fix the error amend the command to set `apihost` accordingly.
