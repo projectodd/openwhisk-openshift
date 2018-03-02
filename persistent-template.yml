@@ -248,6 +248,29 @@ objects:
           ]
       }
 - apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: strimzi-openwhisk
+    labels:
+      strimzi.io/type: kafka
+      strimzi.io/kind: cluster
+  data:
+    kafka-nodes: "${KAFKA_NODE_COUNT}"
+    kafka-image: "strimzi/kafka:latest"
+    kafka-healthcheck-delay: "15"
+    kafka-healthcheck-timeout: "5"
+    zookeeper-nodes: "${ZOOKEEPER_NODE_COUNT}"
+    zookeeper-image: "strimzi/zookeeper:latest"
+    zookeeper-healthcheck-delay: "15"
+    zookeeper-healthcheck-timeout: "5"
+    KAFKA_DEFAULT_REPLICATION_FACTOR: "${KAFKA_NODE_COUNT}"
+    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "${KAFKA_NODE_COUNT}"
+    KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "${KAFKA_NODE_COUNT}"
+    kafka-storage: |-
+      { "type": "persistent-claim", "size": "${KAFKA_VOLUME_CAPACITY}", "delete-claim": false }
+    zookeeper-storage: |-
+      { "type": "persistent-claim", "size": "${ZOOKEEPER_VOLUME_CAPACITY}", "delete-claim": false }
+- apiVersion: v1
   kind: Service
   metadata:
     name: controller
@@ -1047,26 +1070,3 @@ objects:
           image: strimzi/kafka:latest
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
-- apiVersion: v1
-  kind: ConfigMap
-  metadata:
-    name: strimzi-openwhisk
-    labels:
-      strimzi.io/type: kafka
-      strimzi.io/kind: cluster
-  data:
-    kafka-nodes: "${KAFKA_NODE_COUNT}"
-    kafka-image: "strimzi/kafka:latest"
-    kafka-healthcheck-delay: "15"
-    kafka-healthcheck-timeout: "5"
-    zookeeper-nodes: "${ZOOKEEPER_NODE_COUNT}"
-    zookeeper-image: "strimzi/zookeeper:latest"
-    zookeeper-healthcheck-delay: "15"
-    zookeeper-healthcheck-timeout: "5"
-    KAFKA_DEFAULT_REPLICATION_FACTOR: "${KAFKA_NODE_COUNT}"
-    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "${KAFKA_NODE_COUNT}"
-    KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "${KAFKA_NODE_COUNT}"
-    kafka-storage: |-
-      { "type": "persistent-claim", "size": "${KAFKA_VOLUME_CAPACITY}", "delete-claim": false }
-    zookeeper-storage: |-
-      { "type": "persistent-claim", "size": "${ZOOKEEPER_VOLUME_CAPACITY}", "delete-claim": false }
