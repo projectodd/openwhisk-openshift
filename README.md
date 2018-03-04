@@ -37,7 +37,7 @@ That configures `wsk` to use your OpenWhisk. Use the `-i` option to
 avoid the validation error triggered by the self-signed cert in the
 `nginx` service.
 
-    wsk -i list
+    wsk -i action list
     wsk -i action invoke /whisk.system/utils/echo -p message hello -b
 
 ### Alarms
