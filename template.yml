@@ -1113,7 +1113,7 @@ objects:
         containers:
         - name: alarmprovider
           imagePullPolicy: IfNotPresent
-          image: openwhisk/alarmprovider:1.1.7
+          image: openwhisk/alarmprovider:1.9.0
           command: [ "/bin/bash", "-c", "source /alarmprovider_config/env; node /alarmsTrigger/app.js" ]
           envFrom:
           - configMapRef:

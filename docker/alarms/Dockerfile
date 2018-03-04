@@ -14,7 +14,7 @@ RUN yum update -y \
 # Clone the alarm provider
 RUN git clone https://github.com/apache/incubator-openwhisk-package-alarms /openwhisk-package-alarms \
   && cd /openwhisk-package-alarms \
-  && git checkout 1.7.0 \
+  && git checkout 1.9.0 \
   && cd /
 
 # Install wsk binary
