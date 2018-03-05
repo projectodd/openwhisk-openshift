@@ -1074,29 +1074,29 @@ objects:
       spec:
         serviceAccountName: openwhisk
         containers:
-          - name: strimzi-cluster-controller
-            image: strimzi/cluster-controller:latest
-            env:
-              - name: STRIMZI_CONFIGMAP_LABELS
-                value: "strimzi.io/kind=cluster"
-              - name: STRIMZI_NAMESPACE
-                valueFrom:
-                  fieldRef:
-                    fieldPath: metadata.namespace
-              - name: STRIMZI_OPERATION_TIMEOUT_MS
-                value: "600000"
-            livenessProbe:
-              httpGet:
-                path: /healthy
-                port: 8080
-              initialDelaySeconds: 10
-              periodSeconds: 30
-            readinessProbe:
-              httpGet:
-                path: /ready
-                port: 8080
-              initialDelaySeconds: 10
-              periodSeconds: 30
+        - name: strimzi-cluster-controller
+          image: strimzi/cluster-controller:latest
+          env:
+          - name: STRIMZI_CONFIGMAP_LABELS
+            value: "strimzi.io/kind=cluster"
+          - name: STRIMZI_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: STRIMZI_OPERATION_TIMEOUT_MS
+            value: "600000"
+          livenessProbe:
+            httpGet:
+              path: /healthy
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
         initContainers:
         - name: preload-strimzi-zookeeper
           image: strimzi/zookeeper:latest
