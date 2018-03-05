@@ -1061,3 +1061,125 @@ objects:
       { "type": "persistent-claim", "size": "${KAFKA_VOLUME_CAPACITY}", "delete-claim": false }
     zookeeper-storage: |-
       { "type": "persistent-claim", "size": "${ZOOKEEPER_VOLUME_CAPACITY}", "delete-claim": false }
+# START API Gateway       
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: apigateway
+  data:
+    apimgmt-init: |
+     # Dynamically determine API gateway host
+     export TOKEN="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)"
+     export NAMESPACE="$(cat /run/secrets/kubernetes.io/serviceaccount/namespace)"
+     export WHISK_API_GATEWAY_HOST=$(wget -q -O - -o /dev/null --ca-certificate='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt' --header="Authorization: Bearer ${TOKEN}" "https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/oapi/v1/namespaces/${NAMESPACE}/routes/openwhisk?pretty=true" | grep '"host":' | head -n 1 | awk -F '"' '{print $4}')
+     export WHISK_API_HOST_NAME="${WHISK_API_GATEWAY_HOST}"
+     export PUBLIC_GATEWAY_URL="${WHISK_API_GATEWAY_HOST}"
+     exec /init.sh 
+    apigateway-init: |
+     # Dynamically determine API gateway host and other environment variables
+     export TOKEN="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)"
+     export NAMESPACE="$(cat /run/secrets/kubernetes.io/serviceaccount/namespace)"
+     export WHISK_API_GATEWAY_HOST=$(wget -q -O - -o /dev/null --ca-certificate='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt' --header="Authorization: Bearer ${TOKEN}" "https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}/oapi/v1/namespaces/${NAMESPACE}/routes/openwhisk?pretty=true" | grep '"host":' | head -n 1 | awk -F '"' '{print $4}')
+     export WHISK_API_HOST_NAME="${WHISK_API_GATEWAY_HOST}"
+     export PUBLIC_GATEWAY_URL="http://${WHISK_API_GATEWAY_HOST}"
+     # with current bug in minishift its not able to resolve short dns names
+     # https://github.com/minishift/minishift/issues/2070
+     exec env REDIS_HOST="redis.${NAMESPACE}.svc.cluster.local" /etc/init-container.sh
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: redis
+    name: redis
+  spec:
+    ports:
+    - name: redis
+      port: 6379
+    selector:
+      app: redis
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: redis
+    name: redis
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          app: redis
+        name: redis
+      spec:
+       containers:
+        - image: docker.io/redis:3.2
+          name: redis
+    triggers: 
+    - type: ConfigChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: apigateway
+    labels:
+      app: apigateway
+  spec:
+    selector:
+      app: apigateway
+    ports:
+    - port: 8080
+      name: mgmt
+    - port: 9000
+      name: api 
+- apiVersion:  apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    name: apigateway
+    labels:
+      app: apigateway
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          app: apigateway
+      spec:
+        restartPolicy: Always
+        serviceAccountName: openwhisk
+        volumes:
+        - name: apigateway-config
+          configMap:
+            name: apigateway
+            items:
+            - key: apigateway-init
+              path: init
+        containers:
+        - name: apigateway
+          imagePullPolicy: IfNotPresent
+          image: docker.io/openwhisk/apigateway
+          command: [ "/bin/bash", "-o", "allexport", "/apigateway-config/init" ]
+          ports:
+          - name: mgmt
+            containerPort: 8080
+          - name: api
+            containerPort: 9000
+          env: 
+          - name: REDIS_PORT
+            value: "6379"
+          volumeMounts:
+          - name: apigateway-config
+            mountPath: "/apigateway-config"
+    triggers: 
+      - type: ConfigChange
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    labels:
+      app: apigateway
+    name: apigateway
+  spec:
+    port:
+      targetPort: mgmt  
+    to:
+      kind: Service
+      name: apigateway
+# END API Gateway 
