@@ -7,7 +7,7 @@ build specialized docker images for deploying OpenWhisk to OpenShift
 eval $(minishift docker-env)
 docker build --tag projectodd/whisk_couchdb:openshift-latest docker/couchdb
 docker build --tag projectodd/whisk_nginx:openshift-latest docker/nginx
-docker build --tag projectodd/whisk_catalog:openshift-latest docker/openwhisk-catalog
+docker build --tag projectodd/whisk_catalog:openshift-latest docker/catalog
 docker build --tag projectodd/whisk_alarms:openshift-latest docker/alarms
 ```
 
