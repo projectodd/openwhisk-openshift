@@ -306,7 +306,7 @@ objects:
         containers:
         - name: controller
           imagePullPolicy: IfNotPresent
-          image: projectodd/controller:openshift-latest
+          image: openwhisk/controller:6711118
           command: ["/bin/bash", "-c", "COMPONENT_NAME=$(hostname | cut -d'-' -f2) /init.sh `hostname | cut -d'-' -f2`"]
           ports:
           - name: controller
@@ -668,7 +668,7 @@ objects:
         containers:
         - name: invoker
           imagePullPolicy: IfNotPresent
-          image: projectodd/invoker:openshift-latest
+          image: openwhisk/invoker:6711118
           command: [ "/bin/bash", "-o", "allexport", "/invoker_config/init" ]
           ports:
           - name: invoker

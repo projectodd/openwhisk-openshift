@@ -23,8 +23,8 @@ RUN pip install markupsafe
 RUN pip install ansible==2.3.0.0
 RUN pip install -U pyopenssl
 
-ARG OPENWHISK_REPO_URL=https://github.com/projectodd/incubator-openwhisk
-ARG OPENWHISK_REPO_HASH=remotes/origin/openshift-compat
+ARG OPENWHISK_REPO_URL=https://github.com/apache/incubator-openwhisk
+ARG OPENWHISK_REPO_HASH=6711118
 
 RUN git clone $OPENWHISK_REPO_URL /openwhisk && \
     cd /openwhisk && \
