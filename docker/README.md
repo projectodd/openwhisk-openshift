@@ -3,27 +3,27 @@ build specialized docker images for deploying OpenWhisk to OpenShift
 
 ## Rebuilding the images locally:
 
-```
-eval $(minishift docker-env)
-docker build --tag projectodd/whisk_couchdb:openshift-latest docker/couchdb
-docker build --tag projectodd/whisk_nginx:openshift-latest docker/nginx
-docker build --tag projectodd/whisk_catalog:openshift-latest docker/catalog
-docker build --tag projectodd/whisk_alarms:openshift-latest docker/alarms
-```
+Ensure you're working with the same docker repo that your OpenShift
+cluster is using. On minishift, do this:
 
-## Public Docker Images
+    eval $(minishift docker-env)
 
-The projectodd/whisk_* images above are automatically built by
-DockerHub on every push of this repository.
+The following are automatically built by DockerHub. To test local
+changes, you can build them manually:
+    
+	docker build --tag projectodd/whisk_couchdb:openshift-latest docker/couchdb
+	docker build --tag projectodd/whisk_nginx:openshift-latest docker/nginx
+	docker build --tag projectodd/whisk_catalog:openshift-latest docker/catalog
+	docker build --tag projectodd/whisk_alarms:openshift-latest docker/alarms
 
-The OpenShift-specific OpenWhisk images
-(projectodd/controller:openshift-latest and friends) are built from
-https://github.com/projectodd/incubator-openwhisk/ with the command:
+The action runtimes are not built automatically. Their directory names
+match the image names in the templates, so to build them locally:
 
-```
-export SHORT_COMMIT=$(git rev-parse HEAD | cut -c 1-7)
-./gradlew distDocker -PdockerImagePrefix=projectodd -PdockerImageTag=openshift-latest
-./gradlew distDocker -PdockerImagePrefix=projectodd -PdockerImageTag=openshift-${SHORT_COMMIT}
-```
+    for i in $(ls docker/runtimes/); 
+      do docker build --tag projectodd/$i:openshift-latest docker/runtimes/$i; 
+    done
 
-To publish the above images, add `-PdockerRegistry=docker.io` to each of those commands.
+And to push them to DockerHub:
+
+    for i in $(ls docker/runtimes/); do docker push projectodd/$i:openshift-latest; done
+

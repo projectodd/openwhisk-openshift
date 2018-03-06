@@ -140,7 +140,7 @@ objects:
                   {
                       "kind": "nodejs",
                       "image": {
-                          "name": "nodejsaction"
+                          "name": "action-nodejs-6"
                       },
                       "deprecated": true
                   },
@@ -148,7 +148,7 @@ objects:
                       "kind": "nodejs:6",
                       "default": true,
                       "image": {
-                          "name": "nodejs6action"
+                          "name": "action-nodejs-6"
                       },
                       "deprecated": false
                   },
@@ -156,7 +156,7 @@ objects:
                       "kind": "nodejs:8",
                       "default": false,
                       "image": {
-                          "name": "action-nodejs-v8"
+                          "name": "action-nodejs-8"
                       },
                       "deprecated": false
                   }
@@ -165,7 +165,7 @@ objects:
                   {
                       "kind": "python",
                       "image": {
-                          "name": "python2action"
+                          "name": "action-python-2"
                       },
                       "deprecated": false
                   },
@@ -173,14 +173,14 @@ objects:
                       "kind": "python:2",
                       "default": true,
                       "image": {
-                          "name": "python2action"
+                          "name": "action-python-2"
                       },
                       "deprecated": false
                   },
                   {
                       "kind": "python:3",
                       "image": {
-                          "name": "python3action"
+                          "name": "action-python-3"
                       },
                       "deprecated": false
                   }
@@ -189,14 +189,14 @@ objects:
                   {
                       "kind": "swift",
                       "image": {
-                          "name": "swiftaction"
+                          "name": "action-swift-3"
                       },
                       "deprecated": true
                   },
                   {
                       "kind": "swift:3",
                       "image": {
-                          "name": "swift3action"
+                          "name": "action-swift-3"
                       },
                       "deprecated": true
                   },
@@ -204,7 +204,7 @@ objects:
                       "kind": "swift:3.1.1",
                       "default": true,
                       "image": {
-                          "name": "action-swift-v3.1.1"
+                          "name": "action-swift-3"
                       },
                       "deprecated": false
                   }
@@ -214,7 +214,7 @@ objects:
                       "kind": "java",
                       "default": true,
                       "image": {
-                          "name": "java8action"
+                          "name": "action-java-8"
                       },
                       "deprecated": false,
                       "attached": {
@@ -231,7 +231,7 @@ objects:
                       "default": true,
                       "deprecated": false,
                       "image": {
-                          "name": "action-php-v7.1"
+                          "name": "action-php-7"
                       }
                   }
               ]
@@ -818,24 +818,24 @@ objects:
         restartPolicy: Never
         initContainers:
         - name: preload-openwhisk-nodejs6
-          image: projectodd/nodejs6action:openshift-latest
+          image: projectodd/action-nodejs-6:openshift-latest
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         - name: preload-openwhisk-java8
-          image: projectodd/java8action:openshift-latest
+          image: projectodd/action-java-8:openshift-latest
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         - name: preload-openwhisk-python3
-          image: projectodd/python3action:openshift-latest
+          image: projectodd/action-python-3:openshift-latest
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         - name: preload-openwhisk-python2
-          image: projectodd/python2action:openshift-latest
+          image: projectodd/action-python-2:openshift-latest
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         containers:
         - name: preload-openwhisk-swift3
-          image: projectodd/swift3action:openshift-latest
+          image: projectodd/action-swift-3:openshift-latest
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
 - apiVersion: v1
