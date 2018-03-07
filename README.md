@@ -96,7 +96,23 @@ Put your `oc` command in your PATH and create a new project:
 Then deploy OpenWhisk as instructed above. Or if you have this repo
 cloned to your local workspace:
 
+<<<<<<< HEAD
     oc process -f template.yml | oc create -f -
+=======
+    oc logs -f controller-0 | grep "invoker status changed"
+
+You should see a message like `invoker status changed to 0 ->
+Healthy`, at which point you can test the system with your `wsk`
+binary (download from
+https://github.com/apache/incubator-openwhisk-cli/releases/):
+
+    AUTH_SECRET=$(oc get secret whisk.auth -o yaml | grep "system:" | awk '{print $2}' | base64 --decode)
+    wsk property set --auth $AUTH_SECRET --apihost $(oc get route/openwhisk --template="{{.spec.host}}")
+
+That configures `wsk` to use your OpenWhisk. Use the `-i` option to
+avoid the validation error triggered by the self-signed cert in the
+`nginx` service.
+>>>>>>> Quote spec.host resolution for better multi-shell support
 
 ## Shutting down the cluster
 
@@ -106,3 +122,76 @@ URL.
 
     oc process -f template.yml | oc delete -f -
     oc delete all -l template=openwhisk
+
+## Common Problems
+
+### Catalog of actions empty
+
+You can inspect the catalog of actions by calling `wsk action list`.
+It might happen that after installing OpenWhisk there is only a single action:
+
+    $ wsk action list
+    actions
+    /whisk.system/invokerHealthTestAction0                                 private
+
+If that happens, chances are that the default action catalog was not installed properly.
+This could be due to the installation process being slow, e.g.
+
+    $ oc get job
+    NAME                         DESIRED   SUCCESSFUL   AGE
+    install-catalog              1         0            1d
+    preload-openwhisk-runtimes   1         1            1d
+
+To get back the catalog, delete and execute the job again.
+This can be done by extracting the `install-catalog` definition into a separate file and executing it again:
+
+    $ oc delete job install-catalog
+    job "install-catalog" deleted
+    $ oc create -f install-catalog.yml
+    job "install-catalog" created
+    $ oc get pods
+    NAME                               READY     STATUS      RESTARTS   AGE
+    ...
+    install-catalog-gj7r6              0/1       Completed   0          30s
+
+Finally, retrieve the action list again:
+
+    $ wsk action list
+    actions
+    /whisk.system/samples/greeting                                         private nodejs:6
+    /whisk.system/watson-speechToText/speechToText                         private nodejs:6
+    /whisk.system/weather/forecast                                         private nodejs:6
+    /whisk.system/watson-textToSpeech/textToSpeech                         private nodejs:6
+    ...
+
+### `The requested resource does not exist` when creating an action
+
+It might happen that when creating an action you get an error that the requested resource does not exist:
+
+    $ wsk -i action create md5hasher target/maven-java.jar --main org.apache.openwhisk.example.maven.App
+    error: Unable to create action 'md5hasher': The requested resource does not exist. (code 619)
+
+If this happens, it could be that the API host is incorrect.
+So, start by inspecting the property values:
+
+    $ wsk property get
+    client cert
+    Client key
+    whisk auth                  789c46b1-...
+    whisk API host              http://openwhisk-openwhisk.192.168.64.8.nip.io
+    whisk API version           v1
+    whisk namespace             _
+    whisk CLI version           2018-02-28T21:13:48.864+0000
+    whisk API build             2018-01-01T00:00:00Z
+    whisk API build number      latest
+
+API host should only contain the host name, no `http://` in front.
+Fix it by resetting the API host:
+
+    $ wsk property set --apihost openwhisk-openwhisk.192.168.64.8.nip.io
+    ok: whisk API host set to openwhisk-openwhisk.192.168.64.8.nip.io
+
+Now try adding the action again:
+
+    $ wsk -i action create md5hasher target/maven-java.jar --main org.apache.openwhisk.example.maven.App
+    ok: created action md5hasher
