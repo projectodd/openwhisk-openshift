@@ -96,7 +96,23 @@ Put your `oc` command in your PATH and create a new project:
 Then deploy OpenWhisk as instructed above. Or if you have this repo
 cloned to your local workspace:
 
+<<<<<<< HEAD
     oc process -f template.yml | oc create -f -
+=======
+    oc logs -f controller-0 | grep "invoker status changed"
+
+You should see a message like `invoker status changed to 0 ->
+Healthy`, at which point you can test the system with your `wsk`
+binary (download from
+https://github.com/apache/incubator-openwhisk-cli/releases/):
+
+    AUTH_SECRET=$(oc get secret whisk.auth -o yaml | grep "system:" | awk '{print $2}' | base64 --decode)
+    wsk property set --auth $AUTH_SECRET --apihost $(oc get route/openwhisk --template="{{.spec.host}}")
+
+That configures `wsk` to use your OpenWhisk. Use the `-i` option to
+avoid the validation error triggered by the self-signed cert in the
+`nginx` service.
+>>>>>>> Quote spec.host resolution for better multi-shell support
 
 ## Shutting down the cluster
 
@@ -108,26 +124,6 @@ URL.
     oc delete all -l template=openwhisk
 
 ## Common Problems
-
-### Runtime error when setting `apihost` for `wsk`
-
-Example:
-
-    $ wsk property set --auth $AUTH_SECRET --apihost http://$(oc get route/openwhisk --template={{.spec.host}})                                                                                             ⏎
-    runtime error: invalid memory address or nil pointer dereference
-    Application exited unexpectedly
-
-If this happens, try checking the output of `oc get route` separately:
-
-    $ oc get route/openwhisk --template={{.spec.host}}
-    }%
-
-This issue might be happening if running on ZSH, in which case you need to double quote the value in template:
-
-    $ oc get route/openwhisk --template="{{.spec.host}}"
-    openwhisk-openwhisk.192.168.64.8.nip.io
-
-So, to fix the error amend the command to set `apihost` accordingly.
 
 ### Catalog of actions empty
 
