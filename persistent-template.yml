@@ -117,6 +117,10 @@ parameters:
   description: Default number of action invocations per minute per user
   value: "60"
   required: true
+- name: OPENWHISK_VERSION
+  description: The DockerHub tag for openwhisk/{controller,invoker}
+  value: "6711118"
+  required: true
 
 objects:
 - apiVersion: v1
@@ -321,7 +325,7 @@ objects:
         containers:
         - name: controller
           imagePullPolicy: IfNotPresent
-          image: openwhisk/controller:6711118
+          image: openwhisk/controller:${OPENWHISK_VERSION}
           command: ["/bin/bash", "-c", "COMPONENT_NAME=$(hostname | cut -d'-' -f2) /init.sh `hostname | cut -d'-' -f2`"]
           ports:
           - name: controller
@@ -694,7 +698,7 @@ objects:
         containers:
         - name: invoker
           imagePullPolicy: IfNotPresent
-          image: openwhisk/invoker:6711118
+          image: openwhisk/invoker:${OPENWHISK_VERSION}
           command: [ "/bin/bash", "-o", "allexport", "/invoker_config/init" ]
           ports:
           - name: invoker
