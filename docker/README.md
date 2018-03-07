@@ -11,10 +11,10 @@ cluster is using. On minishift, do this:
 The following are automatically built by DockerHub. To test local
 changes, you can build them manually:
     
-	docker build --tag projectodd/whisk_couchdb:openshift-latest docker/couchdb
-	docker build --tag projectodd/whisk_nginx:openshift-latest docker/nginx
-	docker build --tag projectodd/whisk_catalog:openshift-latest docker/catalog
-	docker build --tag projectodd/whisk_alarms:openshift-latest docker/alarms
+    docker build --tag projectodd/whisk_couchdb:openshift-latest docker/couchdb
+    docker build --tag projectodd/whisk_nginx:openshift-latest docker/nginx
+    docker build --tag projectodd/whisk_catalog:openshift-latest docker/catalog
+    docker build --tag projectodd/whisk_alarms:openshift-latest docker/alarms
 
 The action runtimes are not built automatically. Their directory names
 match the image names in the templates, so to build them locally:
