@@ -24,7 +24,7 @@ RUN pip install ansible==2.3.0.0
 RUN pip install -U pyopenssl
 
 ARG OPENWHISK_REPO_URL=https://github.com/apache/incubator-openwhisk
-ARG OPENWHISK_REPO_HASH=6711118
+ARG OPENWHISK_REPO_HASH=fbc0091
 
 RUN git clone $OPENWHISK_REPO_URL /openwhisk && \
     cd /openwhisk && \
