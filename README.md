@@ -77,8 +77,7 @@ There are some sensible defaults for larger persistent clusters in
     
 ## Testing performance with `ab`
 
-    AUTH_SECRET=$(oc get secret whisk.auth -o yaml | grep "system:" | awk '{print $2}' | base64 --decode)
-    ab -c 5 -n 300 -k -m POST -H "Authorization: Basic $(echo $AUTH_SECRET | base64 -w 0)" "https://$(oc get route/openwhisk --template={{.spec.host}})/api/v1/namespaces/whisk.system/actions/utils/echo?blocking=true&result=true"
+    ab -c 5 -n 300 -k -m POST -H "Authorization: Basic $(oc get secret whisk.auth -o yaml | grep "system:" | awk '{print $2}')" "https://$(oc get route/openwhisk --template={{.spec.host}})/api/v1/namespaces/whisk.system/actions/utils/echo?blocking=true&result=true"
 
 ## Installing on minishift
 
