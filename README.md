@@ -75,9 +75,21 @@ There are some sensible defaults for larger persistent clusters in
 
     oc process -f persistent-template.yml --param-file=larger.env | oc create -f -
     
-## Testing performance with `ab`
+## Testing performance
+
+Adjust the connection count and test duration of both below as
+needed. On a large system, be sure to test with connection counts in
+the hundreds.
+
+### Simple testing with `ab`
 
     ab -c 5 -n 300 -k -m POST -H "Authorization: Basic $(oc get secret whisk.auth -o yaml | grep "system:" | awk '{print $2}')" "https://$(oc get route/openwhisk --template={{.spec.host}})/api/v1/namespaces/whisk.system/actions/utils/echo?blocking=true&result=true"
+
+### In-cluster load generation with `wrk`
+
+    echo -e "function main() {\n  return {body: 'Hello world'};\n}" > helloWeb.js
+    wsk -i action create helloWeb helloWeb.js --web=true
+    oc run -it --image williamyeh/wrk wrk --restart=Never --rm   --overrides='{"apiVersion":"v1", "spec":{"volumes":[{"name": "data", "emptyDir": {}}], "containers":[{"name": "wrk", "image": "williamyeh/wrk", "args": ["--threads", "4", "--connections", "50", "--duration", "30s", "--latency", "--timeout", "10s", "http://nginx/api/v1/web/whisk.system/default/helloWeb"], "volumeMounts": [{"mountPath": "/data", "name": "data"}]}]}}'
 
 ## Installing on minishift
 
