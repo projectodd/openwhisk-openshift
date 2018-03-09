@@ -56,6 +56,10 @@ parameters:
   description: Maximum function containers per Invoker
   value: "8"
   required: true
+- name: COUCHDB_INSTANCES
+  description: The desired number of CouchDB nodes
+  value: "1"
+  required: true
 - name: COUCHDB_MEMORY_LIMIT
   description: The maximum container memory for each CouchDB
   value: "512Mi"
@@ -67,6 +71,11 @@ parameters:
   required: true
 - name: COUCHDB_PASSWORD
   description: CouchDB Password
+  generate: expression
+  from: "[a-zA-Z0-9]{16}"
+  required: true
+- name: COUCHDB_SECRET
+  description: CouchDB Replication Secret
   generate: expression
   from: "[a-zA-Z0-9]{16}"
   required: true
@@ -485,7 +494,13 @@ objects:
           command: ['sh', '-cu', 'until nslookup couchdb && nslookup strimzi-openwhisk-kafka; do echo waiting for services; sleep 1; done']
         - name: wait-for-couchdb
           image: busybox
-          command: ['sh', '-c', 'until wget -T 5 --spider http://${COUCHDB_SERVICE_HOST}:${COUCHDB_SERVICE_PORT}/_all_dbs; do echo waiting for couchdb; sleep 2; done;']
+          command: ['sh', '-c', 'until wget -T 5 --spider http://${COUCHDB_SERVICE_HOST}:${COUCHDB_SERVICE_PORT}/${DB_WHISK_ACTIVATIONS}; do echo waiting for couchdb; sleep 2; done;']
+          env:
+          - name: "DB_WHISK_ACTIVATIONS"
+            valueFrom:
+              configMapKeyRef:
+                name: db.config
+                key: db_whisk_activations
 - apiVersion: batch/v1
   kind: Job
   metadata:
@@ -531,6 +546,19 @@ objects:
         targetPort: 5984
         name: couchdb
 - apiVersion: v1
+  kind: Service
+  metadata:
+    name: couchdb-headless
+    labels:
+      name: couchdb-headless
+  spec:
+    selector:
+      name: couchdb
+    ports:
+    - name: couchdb
+      port: 5984
+    clusterIP: None
+- apiVersion: v1
   kind: ConfigMap
   metadata:
     name: db.config
@@ -541,34 +569,30 @@ objects:
     db_whisk_actions: test_whisks
     db_whisk_activations: test_activations
     db_whisk_auths: test_subjects
-- apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: couchdb-data
-  spec:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: ${COUCHDB_VOLUME_CAPACITY}
-- apiVersion: extensions/v1beta1
-  kind: Deployment
+- apiVersion: apps/v1beta1
+  kind: StatefulSet
   metadata:
     name: couchdb
     labels:
       name: couchdb
   spec:
-    replicas: 1
+    replicas: ${COUCHDB_INSTANCES}
+    serviceName: couchdb-headless
+    volumeClaimTemplates:
+    - metadata:
+        name: couchdb-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: ${COUCHDB_VOLUME_CAPACITY}
     template:
       metadata:
         labels:
           name: couchdb
       spec:
         restartPolicy: Always
-        volumes:
-        - name: couchdb-data
-          persistentVolumeClaim:
-            claimName: couchdb-data
         containers:
         - name: couchdb
           imagePullPolicy: IfNotPresent
@@ -577,6 +601,9 @@ objects:
           ports:
           - name: couchdb
             containerPort: 5984
+          - name: epmd
+            containerPort: 4369
+          - containerPort: 9100
           resources:
             limits:
               memory: ${COUCHDB_MEMORY_LIMIT}
@@ -588,6 +615,8 @@ objects:
                 key: db_prefix
           - name: "DB_HOST"
             value: "127.0.0.1"
+          - name: "DB_PORT"
+            value: "$(COUCHDB_SERVICE_PORT_COUCHDB)"
           - name: "COUCHDB_USER"
             valueFrom:
               secretKeyRef:
@@ -598,10 +627,19 @@ objects:
               secretKeyRef:
                 name: db.auth
                 key: db_password
-          - name: "DB_PORT"
-            value: "5984"
-          - name: "NODENAME"
-            value: "couchdb0"
+          - name: "COUCHDB_SECRET"
+            valueFrom:
+              secretKeyRef:
+                name: db.auth
+                key: db_secret
+          - name: "NODENAME_HOSTNAME"
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: "NODENAME_SUBDOMAIN"
+            value: "couchdb-headless"
+          - name: "COUCHDB_NODE_COUNT"
+            value: "${COUCHDB_INSTANCES}"
           - name: "AUTH_WHISK_SYSTEM"
             valueFrom:
               secretKeyRef:
@@ -618,10 +656,8 @@ objects:
           readinessProbe:
             httpGet:
               port: 5984
-              # Tempting to say "/$(DB_PREFIX)_activations", but probe runs
-              # externally, therefore can't access the container environment...
-              path: "/test_activations"
-            initialDelaySeconds: 60
+              path: "/_utils/"
+            initialDelaySeconds: 10
             periodSeconds: 10
             failureThreshold: 10
             timeoutSeconds: 1
@@ -1065,6 +1101,7 @@ objects:
   stringData:
     db_username: "${COUCHDB_USER}"
     db_password: "${COUCHDB_PASSWORD}"
+    db_secret: "${COUCHDB_SECRET}"
 - apiVersion: extensions/v1beta1
   kind: Deployment
   metadata:

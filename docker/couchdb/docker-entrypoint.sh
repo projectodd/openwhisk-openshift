@@ -21,8 +21,8 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 		echo "-name couchdb@$NODENAME" >> /opt/couchdb/etc/vm.args
 	fi
 
-	if [ "$COUCHDB_USER" ] && [ "$COUCHDB_PASSWORD" ]; then
-		# Create admin
+	if [ $COUCHDB_NODE_COUNT -eq 1 ] && [ "$COUCHDB_USER" ] && [ "$COUCHDB_PASSWORD" ]; then
+		# Create admin if we're running in single node mode
 		printf "[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_PASSWORD" > /opt/couchdb/etc/local.d/docker.ini
 	fi
 
