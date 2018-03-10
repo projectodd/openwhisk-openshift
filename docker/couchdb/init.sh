@@ -27,8 +27,6 @@ if [ ! -f /opt/couchdb/data/_openwhisk_initialized.stamp ]; then
   LAST_NODE_INDEX="$(($COUCHDB_NODE_COUNT-1))"
 
   if [ $COUCHDB_NODE_COUNT -gt 1 ]; then
-    # Do the cluster setup dance
-    curl -X POST -H "Content-Type: application/json" http://localhost:$DB_PORT/_cluster_setup -d "{\"action\": \"enable_cluster\", \"bind_address\":\"0.0.0.0\", \"username\": \"${COUCHDB_USER}\", \"password\":\"${COUCHDB_PASSWORD}\", \"node_count\":\"${COUCHDB_NODE_COUNT}\"}"
 
     if [[ "$NODENAME" == couchdb-$LAST_NODE_INDEX* ]]; then
       for (( i=0; i < $LAST_NODE_INDEX; i++ )); do
@@ -44,9 +42,6 @@ if [ ! -f /opt/couchdb/data/_openwhisk_initialized.stamp ]; then
     curl -X PUT http://$COUCHDB_USER:$COUCHDB_PASSWORD@localhost:$DB_PORT/_replicator
     curl -X PUT http://$COUCHDB_USER:$COUCHDB_PASSWORD@localhost:$DB_PORT/_global_changes
   fi
-
-  # disable reduce limits on views
-  curl -X PUT http://$COUCHDB_USER:$COUCHDB_PASSWORD@localhost:$DB_PORT/_node/couchdb@$NODENAME/_config/query_server_config/reduce_limit -d '"false"'
 
   if [[ "$NODENAME" == couchdb-$LAST_NODE_INDEX* ]]; then
     pushd /openwhisk

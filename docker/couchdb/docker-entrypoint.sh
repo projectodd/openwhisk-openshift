@@ -21,10 +21,24 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 		echo "-name couchdb@$NODENAME" >> /opt/couchdb/etc/vm.args
 	fi
 
-	if [ $COUCHDB_NODE_COUNT -eq 1 ] && [ "$COUCHDB_USER" ] && [ "$COUCHDB_PASSWORD" ]; then
-		# Create admin if we're running in single node mode
-		printf "[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_PASSWORD" > /opt/couchdb/etc/local.d/docker.ini
+  if [ ! -z "$COUCHDB_SECRET" ] && ! grep "setcookie" /opt/couchdb/etc/vm.args; then
+    echo "-setcookie $COUCHDB_SECRET" >> /opt/couchdb/etc/vm.args
+  fi
+
+  INI_FILE=/opt/couchdb/etc/local.d/openshift.ini
+  printf "[query_server_config]\n%s = %s\n" "reduce_limit" "false" > $INI_FILE
+
+	if [ "$COUCHDB_USER" ] && [ "$COUCHDB_PASSWORD" ]; then
+    # Admin user
+		printf "[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_PASSWORD" >> $INI_FILE
+    # Bind to 0.0.0.0  
+    printf "[chttpd]\n%s = %s\n" "bind_address" "0.0.0.0" >> $INI_FILE
+    printf "[httpd]\n%s = %s\n" "bind_address" "any" >> $INI_FILE
 	fi
+
+  if [ $COUCHDB_NODE_COUNT -gt 1 ]; then
+    printf "[cluster]\n%s = %s\n" "n" "$COUCHDB_NODE_COUNT" >> $INI_FILE
+  fi
 
 	# if we don't find an [admins] section followed by a non-comment, display a warning
 	if ! grep -Pzoqr '\[admins\]\n[^;]\w+' /opt/couchdb/etc/local.d/*.ini; then
