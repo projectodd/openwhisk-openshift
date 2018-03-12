@@ -850,6 +850,11 @@ objects:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+
+            # Uncomment the below to stop fetching action logs and
+            # greatly increase throughput if you don't need them
+            # - name: "CONFIG_whisk_spi_LogStoreProvider"
+            #   value: "whisk.core.containerpool.logging.LogDriverLogStoreProvider"
 - apiVersion: batch/v1
   kind: Job
   metadata:
