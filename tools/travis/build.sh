@@ -199,36 +199,4 @@ AUTH_SECRET=$(oc get secret whisk.auth -o yaml | grep "system:" | awk '{print $2
 wsk property set --auth $AUTH_SECRET --apihost $(oc get route/openwhisk --template={{.spec.host}})
 
 # list packages and actions now installed in /whisk.system
-wsk -i package list
-wsk -i action list
-
-
-#################
-# Sniff test: create and invoke a simple Hello world action
-#################
-
-# create wsk action
-cat > hello.js << EOL
-function main() {
-  return {payload: 'Hello world'};
-}
-EOL
-
-wsk -i action create hello hello.js
-
-# run the new hello world action
-RESULT=$(wsk -i action invoke --blocking hello | grep "\"status\": \"success\"")
-
-if [ -z "$RESULT" ]; then
-  echo "FAILED! Could not invoked custom action"
-
-  echo " ----------------------------- controller logs ---------------------------"
-  oc logs controller-0
-
-  echo " ----------------------------- invoker logs ---------------------------"
-  oc logs invoker-0
-  exit 1
-fi
-
-wsk -i action delete hello
-echo "PASSED! Deployed openwhisk and invoked Hello action"
+wsk -i list

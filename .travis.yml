@@ -20,6 +20,7 @@ before_install:
 script:
   - ./tools/travis/scancode.sh
   - ./tools/travis/build.sh
+  - ./tools/travis/test.sh
 
 after_failure:
   - ./tools/travis/collect-logs.sh
