@@ -74,7 +74,7 @@ statefulsetHealthCheck () {
   PASSED=false
   TIMEOUT=0
   until $PASSED || [ $TIMEOUT -eq 60 ]; do
-    DEPLOY_STATUS=$(oc get pods -o wide | grep "$1"-0 | awk '{print $3}')
+    DEPLOY_STATUS=$(oc get pods -o wide | grep "^$1"-0 | awk '{print $3}')
     if [ "$DEPLOY_STATUS" == "Running" ]; then
       PASSED=true
       break
@@ -165,7 +165,7 @@ ROOTDIR="$SCRIPTDIR/../../"
 cd $ROOTDIR
 
 oc new-project openwhisk
-oc process -f $OPENSHIFT_TEMPLATE | oc create -f -
+oc process -f ${OPENSHIFT_TEMPLATE:-template.yml} | oc create -f -
 
 couchdbHealthCheck
 
@@ -180,7 +180,7 @@ couchdbHealthCheck
 deploymentHealthCheck "zookeeper"
 deploymentHealthCheck "kafka"
 statefulsetHealthCheck "controller"
-deploymentHealthCheck "invoker"
+statefulsetHealthCheck "invoker"
 deploymentHealthCheck "nginx"
 
 # # install routemgmt
@@ -230,4 +230,5 @@ if [ -z "$RESULT" ]; then
   exit 1
 fi
 
+wsk -i action delete hello
 echo "PASSED! Deployed openwhisk and invoked Hello action"
