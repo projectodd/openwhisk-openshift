@@ -34,12 +34,14 @@ invoke () {
 }
 
 # Create actions
-wsk -i action create vars-py resources/vars.py 
+wsk -i action create vars-py2 resources/vars.py --kind python:2
+wsk -i action create vars-py3 resources/vars.py --kind python:3
 wsk -i action create vars-js6 resources/vars.js --kind nodejs:6
+wsk -i action create vars-js8 resources/vars.js --kind nodejs:8
 wsk -i action create vars-java resources/vars.jar --main Vars
 
 # Invoke then delete them
-for i in {py,js6,java}; do
+for i in {py2,py3,js6,js8,java}; do
     invoke vars-$i
     wsk -i action delete vars-$i
 done
