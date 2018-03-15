@@ -24,14 +24,22 @@ echo "### COUCHDB LOGS ###"
 oc logs $(oc get pods | grep couchdb | awk '{print $1}')
 echo ""
 echo ""
+echo "### ALARMPROVIDER LOGS ###"
+oc logs $(oc get pods | grep alarmprovider | awk '{print $1}')
+echo ""
+echo ""
 echo "### CONTROLLER LOGS ###"
 oc logs controller-0
 echo ""
 echo ""
 echo "### INVOKER LOGS ###"
 oc logs invoker-0
+echo ""
+echo ""
+echo "### PODS ###"
 oc get pods -o wide --show-all
 echo ""
 echo ""
+echo "### NODES ###"
 oc login -u system:admin
 oc describe nodes
