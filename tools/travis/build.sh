@@ -182,6 +182,7 @@ deploymentHealthCheck "kafka"
 statefulsetHealthCheck "controller"
 statefulsetHealthCheck "invoker"
 deploymentHealthCheck "nginx"
+deploymentHealthCheck "alarmprovider"
 
 # # install routemgmt
 # echo "Installing routemgmt"
