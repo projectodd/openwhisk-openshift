@@ -909,8 +909,8 @@ objects:
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         containers:
-        - name: preload-openwhisk-swift3
-          image: projectodd/action-swift-3:openshift-latest
+        - name: preload-openwhisk-nodejs8
+          image: projectodd/action-nodejs-8:openshift-latest
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
 - apiVersion: v1
