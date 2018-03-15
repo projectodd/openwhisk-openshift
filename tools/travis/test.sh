@@ -11,8 +11,8 @@ ROOTDIR="$SCRIPTDIR/../../"
 cd $ROOTDIR
 
 # To avoid hiding "admin bugs", do it as a guest
-AUTH_SECRET=$(oc get secret whisk.auth -o yaml | grep "guest:" | awk '{print $2}' | base64 --decode)
-wsk property set --auth $AUTH_SECRET --apihost $(oc get route/openwhisk --template={{.spec.host}})
+# AUTH_SECRET=$(oc get secret whisk.auth -o yaml | grep "guest:" | awk '{print $2}' | base64 --decode)
+# wsk property set --auth $AUTH_SECRET --apihost $(oc get route/openwhisk --template={{.spec.host}})
 
 invoke () {
   if [ -z "$1" ]; then
@@ -47,7 +47,7 @@ for i in {py2,py3,js6,js8,java}; do
 done
 
 # Fire a greeting every second
-wsk -i trigger create every-second \
+wsk -i -d trigger create every-second \
     --feed /whisk.system/alarms/alarm \
     --param cron '*/1 * * * * *' \
     --param trigger_payload "{\"name\":\"Odin\",\"place\":\"Asgard\"}"
