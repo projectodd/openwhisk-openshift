@@ -53,7 +53,7 @@ wsk -i trigger create every-second \
     --param trigger_payload "{\"name\":\"Odin\",\"place\":\"Asgard\"}"
 wsk -i rule create invoke-periodically every-second /whisk.system/samples/greeting
 # Wait for at least one greeting to fire
-sleep 2
+sleep 3
 # Grab the id from the log -- there should only be one
 ACTIVATION_ID=$(oc logs --since=1s invoker-0 | grep "greeting.*activationId" | awk '{print $(NF-1)}')
 # Ensure we see our expected greeting

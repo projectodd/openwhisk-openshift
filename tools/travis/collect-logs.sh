@@ -33,3 +33,4 @@ oc logs invoker-0
 oc get pods -o wide --show-all
 echo ""
 echo ""
+oc get nodes -o yaml -a
