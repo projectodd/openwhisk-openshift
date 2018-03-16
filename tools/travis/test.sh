@@ -72,6 +72,10 @@ wsk -i trigger create testsh-every-second \
     --param cron '*/1 * * * * *' \
     --param trigger_payload "{\"name\":\"Odin\",\"place\":\"Asgard\"}"
 wsk -i rule create testsh-invoke-periodically testsh-every-second /whisk.system/samples/greeting
+if [ ! $? -eq 0 ]; then
+    echo "Failed to create alarm trigger/rule"
+    exit 1
+fi
 # Account for stale reads in activation list
 waitForGreeting
 # Grab the id for the most recent greeting
