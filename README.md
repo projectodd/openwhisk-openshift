@@ -119,6 +119,36 @@ at the top of this README after creating a new project:
     oc new-project openwhisk
     oc process -f https://git.io/openwhisk-template | oc create -f -
 
+### Testing local changes
+
+If you'd like to test local changes you make to upstream OpenWhisk,
+e.g. the controller or invoker, first ensure you're using minishift's
+docker repo:
+
+    eval $(minishift docker-env)
+
+Then when you build the OW images, override the prefix and tag:
+
+    ./gradlew distDocker -PdockerImagePrefix=openwhisk -PdockerImageTag=whatever
+
+The `openwhisk` prefix matters, because it's expected by our template.
+The `whatever` tag doesn't matter, because it's simply passed as a
+parameter to the template to identify the image you just built:
+
+    oc process -f template.yml OPENWHISK_VERSION=whatever | oc create -f -
+
+Once everything is running, your *build-test-debug* cycle will require
+deleting the relevant pod, e.g. `controller-0` or `invoker-0`, after
+running your `distDocker` task, e.g. `core:controller:distDocker` or
+`core:invoker:distDocker`. This will trigger the corresponding
+deployment to create a new pod using your new image.
+
+    oc delete pod invoker-0
+
+Allow some time for the components to cleanly shutdown and rediscover
+themselves, of course. And while you're waiting, consider coming up
+with some good unit tests instead. ;)
+
 ## Shutting down the cluster
 
 All of the OpenWhisk resources can be shutdown gracefully using the
