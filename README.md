@@ -99,15 +99,25 @@ fix a networking bug in current releases:
     minishift start --memory 8GB
     minishift ssh -- sudo ip link set docker0 promisc on
     
-Put your `oc` command in your PATH and create a new project:
+Put your `oc` command in your PATH:
 
     eval $(minishift oc-env)
+
+Assuming you have this repo cloned to your local workspace, run:
+
+    ./tools/travis/build.sh
+
+That will create an `openwhisk` project, install the resources from
+[template.yml](template.yml) into it, and wait for all components to
+be ready. When it completes, you should have a functioning OpenWhisk
+platform, to which you can then
+[point your `wsk` command](#configuring-wsk).
+
+If you prefer not to clone this repo, you can simply follow the steps
+at the top of this README after creating a new project:
+
     oc new-project openwhisk
-
-Then deploy OpenWhisk as instructed above. Or if you have this repo
-cloned to your local workspace:
-
-    oc process -f template.yml | oc create -f -
+    oc process -f https://git.io/openwhisk-template | oc create -f -
 
 ## Shutting down the cluster
 
