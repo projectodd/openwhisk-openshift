@@ -128,7 +128,7 @@ parameters:
   required: true
 - name: OPENWHISK_VERSION
   description: The DockerHub tag for openwhisk/{controller,invoker}
-  value: "fbc0091"
+  value: "rhdemo-7643de9"
   required: true
 - name: PROJECTODD_VERSION
   description: The DockerHub tag for projectodd images
@@ -338,7 +338,7 @@ objects:
         containers:
         - name: controller
           imagePullPolicy: IfNotPresent
-          image: openwhisk/controller:${OPENWHISK_VERSION}
+          image: projectodd/controller:${OPENWHISK_VERSION}
           command: ["/bin/bash", "-c", "COMPONENT_NAME=$(hostname | cut -d'-' -f2) /init.sh `hostname | cut -d'-' -f2`"]
           ports:
           - name: controller
@@ -738,7 +738,7 @@ objects:
         containers:
         - name: invoker
           imagePullPolicy: IfNotPresent
-          image: openwhisk/invoker:${OPENWHISK_VERSION}
+          image: projectodd/invoker:${OPENWHISK_VERSION}
           command: [ "/bin/bash", "-o", "allexport", "/invoker_config/init" ]
           ports:
           - name: invoker

@@ -120,11 +120,12 @@ docker repo:
 
 Then when you build the OW images, override the prefix and tag:
 
-    ./gradlew distDocker -PdockerImagePrefix=openwhisk -PdockerImageTag=whatever
+    ./gradlew distDocker -PdockerImagePrefix=projectodd -PdockerImageTag=whatever
 
-The `openwhisk` prefix matters, because it's expected by our template.
-The `whatever` tag doesn't matter, because it's simply passed as a
-parameter to the template to identify the image you just built:
+The `projectodd` prefix matters, because it's expected by our
+template. The `whatever` tag doesn't matter, because it's simply
+passed as a parameter to the template to identify the image you just
+built:
 
     oc process -f template.yml OPENWHISK_VERSION=whatever | oc create -f -
 
@@ -139,6 +140,12 @@ deployment to create a new pod using your new image.
 Allow some time for the components to cleanly shutdown and rediscover
 themselves, of course. And while you're waiting, consider coming up
 with some good unit tests instead. ;)
+
+And if you wish to publish your changes to DockerHub's projectodd
+organization:
+
+    COMMIT=$(git rev-parse HEAD | cut -c 1-7)
+    ./gradlew distDocker -PdockerImagePrefix=projectodd -PdockerImageTag=$COMMIT -PdockerRegistry=docker.io
 
 ## Shutdown
 
