@@ -21,8 +21,11 @@ tar xvzOf openshift-origin-client-tools-v$OPENSHIFT_VERSION-$OPENSHIFT_COMMIT-li
 sudo mv oc.bin /usr/local/bin/oc
 sudo chmod 755 /usr/local/bin/oc
 
+# Figure out this host's IP address
+IP_ADDR="$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)"
+
 # Start OpenShift
-oc cluster up
+oc cluster up --public-hostname=$IP_ADDR
 
 oc login -u system:admin
 
