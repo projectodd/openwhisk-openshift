@@ -1224,3 +1224,40 @@ objects:
           volumeMounts:
           - name: alarmprovider-config
             mountPath: "/alarmprovider_config"
+- apiVersion: batch/v2alpha1
+  kind: CronJob
+  metadata:
+    name: refresh-activations
+    labels:
+      name: refresh-activations
+  spec:
+    schedule: "*/5 * * * *"
+    concurrencyPolicy: Forbid
+    successfulJobsHistoryLimit: 1
+    failedJobsHistoryLimit: 1
+    jobTemplate:
+      spec:
+        template:
+          metadata:
+            labels:
+              parent: "cronjob-refresh-activations"
+          spec:
+            serviceAccountName: openwhisk
+            restartPolicy: Never
+            volumes:
+            - name: alarmprovider-config
+              configMap:
+                name: alarmprovider
+            containers:
+            - name: refresh-activations
+              image: projectodd/whisk_alarms:openshift-latest
+              command: ["/bin/bash", "-c", "source /alarmprovider_config/env; /openwhisk/bin/wsk --auth $AUTH_GUEST --apihost $ROUTER_HOST -i activationlist"]
+              env:
+              - name: "AUTH_GUEST"
+                valueFrom:
+                  secretKeyRef:
+                    name: whisk.auth
+                    key: guest
+              volumeMounts:
+              - name: alarmprovider-config
+                mountPath: "/alarmprovider_config"
