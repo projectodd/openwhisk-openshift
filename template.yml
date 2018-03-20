@@ -1254,3 +1254,8 @@ objects:
                   secretKeyRef:
                     name: whisk.auth
                     key: guest
+            initContainers:
+            - name: wait-for-controller
+              image: busybox
+              command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
+              restartPolicy: Never
