@@ -1263,20 +1263,13 @@ objects:
           spec:
             serviceAccountName: openwhisk
             restartPolicy: Never
-            volumes:
-            - name: alarmprovider-config
-              configMap:
-                name: alarmprovider
             containers:
             - name: refresh-activations
               image: projectodd/whisk_alarms:openshift-latest
-              command: ["/bin/bash", "-c", "source /alarmprovider_config/env; /openwhisk/bin/wsk --auth $AUTH_GUEST --apihost $ROUTER_HOST -i activationlist"]
+              command: ["/bin/bash", "-c", "/openwhisk/bin/wsk --auth $AUTH_GUEST --apihost http://controller:8080 -i activation list"]
               env:
               - name: "AUTH_GUEST"
                 valueFrom:
                   secretKeyRef:
                     name: whisk.auth
                     key: guest
-              volumeMounts:
-              - name: alarmprovider-config
-                mountPath: "/alarmprovider_config"
