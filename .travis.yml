@@ -25,8 +25,8 @@ script:
 after_failure:
   - ./tools/travis/collect-logs.sh
 
-# deploy:
+# publish:
 # - provider: script
-#   script: ./tools/travis/deploy.sh
+#   script: ./tools/travis/publish.sh
 #   on:
 #     branch: master
