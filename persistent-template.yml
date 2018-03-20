@@ -130,6 +130,10 @@ parameters:
   description: The DockerHub tag for openwhisk/{controller,invoker}
   value: "fbc0091"
   required: true
+- name: PROJECTODD_VERSION
+  description: The DockerHub tag for projectodd images
+  value: "cc60dfe"
+  required: true
 
 objects:
 - apiVersion: v1
@@ -513,7 +517,7 @@ objects:
       spec:
         containers:
         - name: catalog
-          image: projectodd/whisk_catalog:openshift-latest
+          image: projectodd/whisk_catalog:${PROJECTODD_VERSION}
           env:
             - name: "WHISK_CLI_VERSION"
               valueFrom:
@@ -596,7 +600,7 @@ objects:
         containers:
         - name: couchdb
           imagePullPolicy: IfNotPresent
-          image: projectodd/whisk_couchdb:openshift-latest
+          image: projectodd/whisk_couchdb:${PROJECTODD_VERSION}
           command: ["/init.sh"]
           ports:
           - name: couchdb
@@ -667,7 +671,7 @@ objects:
     name: invoker.config
   data:
     docker_image_prefix: projectodd
-    docker_image_tag: openshift-latest
+    docker_image_tag: ${PROJECTODD_VERSION}
     docker_registry: ""
     invoker_container_dns: ""
     invoker_container_network: bridge
@@ -893,24 +897,24 @@ objects:
         restartPolicy: Never
         initContainers:
         - name: preload-openwhisk-nodejs6
-          image: projectodd/action-nodejs-6:openshift-latest
+          image: projectodd/action-nodejs-6:${PROJECTODD_VERSION}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         - name: preload-openwhisk-java8
-          image: projectodd/action-java-8:openshift-latest
+          image: projectodd/action-java-8:${PROJECTODD_VERSION}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         - name: preload-openwhisk-python3
-          image: projectodd/action-python-3:openshift-latest
+          image: projectodd/action-python-3:${PROJECTODD_VERSION}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         - name: preload-openwhisk-python2
-          image: projectodd/action-python-2:openshift-latest
+          image: projectodd/action-python-2:${PROJECTODD_VERSION}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         containers:
         - name: preload-openwhisk-nodejs8
-          image: projectodd/action-nodejs-8:openshift-latest
+          image: projectodd/action-nodejs-8:${PROJECTODD_VERSION}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
 - apiVersion: v1
@@ -1073,7 +1077,7 @@ objects:
         containers:
         - name: nginx
           imagePullPolicy: IfNotPresent
-          image: projectodd/whisk_nginx:openshift-latest
+          image: projectodd/whisk_nginx:${PROJECTODD_VERSION}
           command: [ "/bin/bash", "-o", "allexport", "/nginx_config/init" ]
           env:
           - name: KUBERNETES_NAMESPACE
@@ -1223,7 +1227,7 @@ objects:
           command: ['sh', '-cu', 'echo "$COUCHDB_SERVICE_HOST"']
         - name: install-alarms-catalog
           imagePullPolicy: IfNotPresent
-          image: projectodd/whisk_alarms:openshift-latest
+          image: projectodd/whisk_alarms:${PROJECTODD_VERSION}
           envFrom:
           - configMapRef:
               name: alarmprovider
@@ -1265,7 +1269,7 @@ objects:
             restartPolicy: Never
             containers:
             - name: refresh-activations
-              image: projectodd/whisk_alarms:openshift-latest
+              image: projectodd/whisk_alarms:${PROJECTODD_VERSION}
               command: ["/bin/bash", "-c", "/openwhisk/bin/wsk --auth $AUTH_GUEST --apihost http://controller:8080 -i activation list"]
               env:
               - name: "AUTH_GUEST"
