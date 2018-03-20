@@ -3,6 +3,25 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Build Status](https://travis-ci.org/projectodd/openwhisk-openshift.svg?branch=master)](https://travis-ci.org/projectodd/openwhisk-openshift)
 
+This repository contains the necessary templates and compatible
+[docker](docker/) images for deploying OpenWhisk on OpenShift.
+
+* [Installation](#installation)
+* [Using `wsk`](#using-wsk)
+  * [Alarms](#alarms)
+* [Using `minishift`](#using-minishift)
+  * [Testing Local Changes](#testing-local-changes)
+* [Shutdown](#shutdown)
+* [Advanced Configuration](#advanced-configuration)
+    * [Persistent Data](#persistent-data)
+    * [Larger Clusters](#larger-clusters)
+* [Performance Testing](#performance-testing)
+    * [With `ab`](#with-ab)
+    * [With `wrk`](#with-wrk)
+* [Common Problems](#common-problems)
+
+## Installation
+
 The following command will deploy OpenWhisk in your OpenShift project
 using the latest ephemeral template in this repo:
 
@@ -23,7 +42,7 @@ healthy:
 
 You should see a message like `invoker status changed to 0 -> Healthy`
 
-## Configuring `wsk`
+## Using `wsk`
 
 Once your cluster is ready, you need to configure your `wsk` binary.
 If necessary, download a recent one from
@@ -63,35 +82,7 @@ Try the following `wsk` commands:
         /whisk.system/samples/greeting
     wsk -i activation poll
 
-## Persistent data
-
-If you'd like for data to survive reboots, there's a
-`persistent-template.yml` that will setup PersistentVolumeClaims.
-
-## Sensible defaults for larger persistent clusters
-
-There are some sensible defaults for larger persistent clusters in
-[larger.env](larger.env) that you can use like so:
-
-    oc process -f persistent-template.yml --param-file=larger.env | oc create -f -
-    
-## Testing performance
-
-Adjust the connection count and test duration of both below as
-needed. On a large system, be sure to test with connection counts in
-the hundreds.
-
-### Simple testing with `ab`
-
-    ab -c 5 -n 300 -k -m POST -H "Authorization: Basic $(oc get secret whisk.auth -o yaml | grep "system:" | awk '{print $2}')" "https://$(oc get route/openwhisk --template={{.spec.host}})/api/v1/namespaces/whisk.system/actions/utils/echo?blocking=true&result=true"
-
-### In-cluster load generation with `wrk`
-
-    echo -e "function main() {\n  return {body: 'Hello world'};\n}" > helloWeb.js
-    wsk -i action create helloWeb helloWeb.js --web=true
-    oc run -it --image williamyeh/wrk wrk --restart=Never --rm   --overrides='{"apiVersion":"v1", "spec":{"volumes":[{"name": "data", "emptyDir": {}}], "containers":[{"name": "wrk", "image": "williamyeh/wrk", "args": ["--threads", "4", "--connections", "50", "--duration", "30s", "--latency", "--timeout", "10s", "http://nginx/api/v1/web/whisk.system/default/helloWeb"], "volumeMounts": [{"mountPath": "/data", "name": "data"}]}]}}'
-
-## Installing on minishift
+## Using minishift
 
 First, start [minishift](https://github.com/minishift/minishift/) and
 fix a networking bug in current releases:
@@ -111,15 +102,15 @@ That will create an `openwhisk` project, install the resources from
 [template.yml](template.yml) into it, and wait for all components to
 be ready. When it completes, you should have a functioning OpenWhisk
 platform, to which you can then
-[point your `wsk` command](#configuring-wsk).
+[point your `wsk` command](#using-wsk).
 
-If you prefer not to clone this repo, you can simply follow the steps
-at the top of this README after creating a new project:
+If you prefer not to clone this repo, you can simply follow the
+[installation steps](#installation) after creating a new project:
 
     oc new-project openwhisk
     oc process -f https://git.io/openwhisk-template | oc create -f -
 
-### Testing local changes
+### Testing Local Changes
 
 If you'd like to test local changes you make to upstream OpenWhisk,
 e.g. the controller or invoker, first ensure you're using minishift's
@@ -143,13 +134,13 @@ running your `distDocker` task, e.g. `core:controller:distDocker` or
 `core:invoker:distDocker`. This will trigger the corresponding
 deployment to create a new pod using your new image.
 
-    oc delete pod invoker-0
+    oc delete --force --now pod controller-0 invoker-0
 
 Allow some time for the components to cleanly shutdown and rediscover
 themselves, of course. And while you're waiting, consider coming up
 with some good unit tests instead. ;)
 
-## Shutting down the cluster
+## Shutdown
 
 All of the OpenWhisk resources can be shutdown gracefully using the
 template. The `-f` parameter takes either a local file or a remote
@@ -157,6 +148,44 @@ URL.
 
     oc process -f template.yml | oc delete -f -
     oc delete all -l template=openwhisk
+
+Alternatively, you can just delete the project:
+
+    oc delete project openwhisk
+
+## Advanced Configuration
+
+### Persistent Data
+
+If you'd like for data to survive reboots, there's a
+`persistent-template.yml` that will setup PersistentVolumeClaims.
+
+### Larger Clusters
+
+There are some sensible defaults for larger persistent clusters in
+[larger.env](larger.env) that you can use like so:
+
+    oc process -f persistent-template.yml --param-file=larger.env | oc create -f -
+    
+## Performance Testing
+
+Adjust the connection count and test duration of both below as
+needed. On a large system, be sure to test with connection counts in
+the hundreds.
+
+### With `ab`
+
+For simple testing, use `ab`:
+
+    ab -c 5 -n 300 -k -m POST -H "Authorization: Basic $(oc get secret whisk.auth -o yaml | grep "system:" | awk '{print $2}')" "https://$(oc get route/openwhisk --template={{.spec.host}})/api/v1/namespaces/whisk.system/actions/utils/echo?blocking=true&result=true"
+
+### With `wrk`
+
+You can generate in-cluster load with `wrk`
+
+    echo -e "function main() {\n  return {body: 'Hello world'};\n}" > helloWeb.js
+    wsk -i action create helloWeb helloWeb.js --web=true
+    oc run -it --image williamyeh/wrk wrk --restart=Never --rm   --overrides='{"apiVersion":"v1", "spec":{"volumes":[{"name": "data", "emptyDir": {}}], "containers":[{"name": "wrk", "image": "williamyeh/wrk", "args": ["--threads", "4", "--connections", "50", "--duration", "30s", "--latency", "--timeout", "10s", "http://nginx/api/v1/web/whisk.system/default/helloWeb"], "volumeMounts": [{"mountPath": "/data", "name": "data"}]}]}}'
 
 ## Common Problems
 
