@@ -2,22 +2,12 @@ FROM jboss/base:latest
 
 USER root
 
+COPY requirements.txt .
+
 RUN yum -y install python-setuptools gcc python-devel \
   && easy_install pip \
   && pip install --no-cache-dir --upgrade pip setuptools six \
-  && pip install --no-cache-dir \
-        gevent==1.1.2 \
-        flask==0.11.1 \
-        beautifulsoup4==4.5.1 \
-        httplib2==0.9.2 \
-        kafka_python==1.3.1 \
-        lxml==3.6.4 \
-        python-dateutil==2.5.3 \
-        requests==2.11.1 \
-        scrapy==1.1.2 \
-        simplejson==3.8.2 \
-        virtualenv==15.1.0 \
-        twisted==16.4.0 \
+  && pip install --no-cache-dir -r requirements.txt \
   && yum -y remove gcc python-devel \
   && yum clean all \
   && rm -rf /var/cache/yum
