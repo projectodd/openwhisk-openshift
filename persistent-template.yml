@@ -912,6 +912,10 @@ objects:
           image: projectodd/action-python-2:${PROJECTODD_VERSION}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
+        - name: preload-openwhisk-php7
+          image: projectodd/action-php-7:${PROJECTODD_VERSION}
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c", "echo", "success"]
         containers:
         - name: preload-openwhisk-nodejs8
           image: projectodd/action-nodejs-8:${PROJECTODD_VERSION}
