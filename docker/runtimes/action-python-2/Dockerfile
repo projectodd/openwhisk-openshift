@@ -4,7 +4,7 @@ USER root
 
 COPY requirements.txt .
 
-RUN yum -y install python-setuptools gcc python-devel \
+RUN yum -y --setopt=tsflags=nodocs install python-setuptools gcc python-devel \
   && easy_install pip \
   && pip install --no-cache-dir --upgrade pip setuptools six \
   && pip install --no-cache-dir -r requirements.txt \
