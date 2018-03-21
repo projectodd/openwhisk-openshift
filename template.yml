@@ -115,6 +115,10 @@ parameters:
   description: Default number of action invocations per minute per user
   value: "60"
   required: true
+- name: WHISK_TRIGGERS_FIRES_PER_MINUTE
+  description: Default number of triggers that can fire per minute per user
+  value: "60"
+  required: true
 - name: WHISK_DAYS_TO_KEEP_LOGS
   description: Number of days to keep activation logs before pruning them from the database
   value: "7"
@@ -153,7 +157,7 @@ objects:
     actions_invokes_concurrentInSystem: "${WHISK_ACTIONS_INVOKES_CONCURRENT_IN_SYSTEM}"
     actions_invokes_perMinute: "${WHISK_ACTIONS_INVOKES_PER_MINUTE}"
     actions_sequence_maxLength: "50"
-    triggers_fires_perMinute: "60"
+    triggers_fires_perMinute: "${WHISK_TRIGGERS_FIRES_PER_MINUTE}"
 - apiVersion: v1
   kind: ConfigMap
   metadata:
