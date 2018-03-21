@@ -784,7 +784,7 @@ objects:
             - name: "INVOKER_NUMCORE"
               value: "${INVOKER_MAX_CONTAINERS}"
             - name: "CONFIG_whisk_containerProxy_timeouts_idleContainer"
-              value: "$(INVOKER_CONTAINER_TIMEOUT)"
+              value: "${INVOKER_CONTAINER_TIMEOUT}"
             - name: "DOCKER_IMAGE_PREFIX"
               valueFrom:
                 configMapKeyRef:
