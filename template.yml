@@ -115,6 +115,14 @@ parameters:
   description: Default number of action invocations per minute per user
   value: "60"
   required: true
+- name: WHISK_DAYS_TO_KEEP_LOGS
+  description: Number of days to keep activation logs before pruning them from the database
+  value: "7"
+  required: true
+- name: WHISK_DAYS_TO_KEEP_ACTIVATIONS
+  description: Number of days to keep activation records before pruning them from the database
+  value: "30"
+  required: true
 - name: OPENWHISK_VERSION
   description: The DockerHub tag for openwhisk/{controller,invoker}
   value: "rhdemo-7643de9"
@@ -562,6 +570,8 @@ objects:
     db_whisk_actions: test_whisks
     db_whisk_activations: test_activations
     db_whisk_auths: test_subjects
+    db_days_to_keep_logs: "${WHISK_DAYS_TO_KEEP_LOGS}"
+    db_days_to_keep_activations: "${WHISK_DAYS_TO_KEEP_ACTIVATIONS}"
 - apiVersion: apps/v1beta1
   kind: StatefulSet
   metadata:
@@ -1269,3 +1279,62 @@ objects:
               image: busybox
               command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
               restartPolicy: Never
+- apiVersion: batch/v2alpha1
+  kind: CronJob
+  metadata:
+    name: prune-activations
+    labels:
+      name: prune-activations
+  spec:
+    schedule: "0 0 * * *"
+    concurrencyPolicy: Forbid
+    successfulJobsHistoryLimit: 1
+    failedJobsHistoryLimit: 1
+    jobTemplate:
+      spec:
+        template:
+          metadata:
+            labels:
+              parent: "cronjob-prune-activations"
+          spec:
+            restartPolicy: Never
+            containers:
+            - name: refresh-activations
+              image: projectodd/whisk_couchdb:${PROJECTODD_VERSION}
+              command: ["/bin/bash", "-c", "set -x; /openwhisk/tools/db/deleteLogsFromActivations.py --dbUrl http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB --dbName $DB_ACTIVATIONS --days $DB_DAYS_TO_KEEP_LOGS; /openwhisk/tools/db/cleanUpActivations.py --dbUrl http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB --dbName $DB_ACTIVATIONS --days $DB_DAYS_TO_KEEP_ACTIVATIONS"]
+              env:
+              - name: "DB_USERNAME"
+                valueFrom:
+                  secretKeyRef:
+                    name: db.auth
+                    key: db_username
+              - name: "DB_PASSWORD"
+                valueFrom:
+                  secretKeyRef:
+                    name: db.auth
+                    key: db_password
+              - name: "DB_ACTIVATIONS"
+                valueFrom:
+                  configMapKeyRef:
+                    name: db.config
+                    key: db_whisk_activations
+              - name: "DB_DAYS_TO_KEEP_LOGS"
+                valueFrom:
+                  configMapKeyRef:
+                    name: db.config
+                    key: db_days_to_keep_logs
+              - name: "DB_DAYS_TO_KEEP_ACTIVATIONS"
+                valueFrom:
+                  configMapKeyRef:
+                    name: db.config
+                    key: db_days_to_keep_activations
+            initContainers:
+            - name: wait-for-couchdb
+              image: busybox
+              command: ['sh', '-c', 'until wget -T 5 --spider http://${COUCHDB_SERVICE_HOST}:${COUCHDB_SERVICE_PORT}/${DB_WHISK_ACTIVATIONS}; do echo waiting for couchdb; sleep 2; done;']
+              env:
+              - name: "DB_WHISK_ACTIVATIONS"
+                valueFrom:
+                  configMapKeyRef:
+                    name: db.config
+                    key: db_whisk_activations
