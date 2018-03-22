@@ -31,14 +31,11 @@ after_failure:
 #   on:
 #     branch: master
 
-stages:
-  - docker_build
-  - test
-  - deploy
-
 jobs:
   include:
-    - stage: docker_build
-    - script: ./tools/travis/publish.sh openshift-latest
+    - stage: docker build
+      env: OPENSHIFT_TEMPLATE=template.yml
+      script: ./tools/travis/publish.sh openshift-latest
+    - stage: test
     - stage: deploy
-    - script: ./deploy
+      env: OPENSHIFT_TEMPLATE=template.yml
