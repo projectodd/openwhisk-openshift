@@ -13,4 +13,11 @@ RUN curl -L -o nodejs.tar.gz https://github.com/apache/incubator-openwhisk-runti
   && npm install \
   && npm cache clean --force
 
+USER root
+
+RUN chown -R default:root /opt/app-root/src \
+  && chmod -R g+rwX /opt/app-root/src
+
+USER 1001
+
 CMD ["node", "--expose-gc", "app.js"]
