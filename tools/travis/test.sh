@@ -64,7 +64,7 @@ wsk -i action create testsh-vars-py3 resources/vars.py --kind python:3
 wsk -i action create testsh-vars-js6 resources/vars.js --kind nodejs:6
 wsk -i action create testsh-vars-js8 resources/vars.js --kind nodejs:8
 wsk -i action create testsh-vars-java resources/vars.jar --main Vars
-wsk -i action create testsh-vars-php7 resources/vars.php --kind --kind php:7.1
+wsk -i action create testsh-vars-php7 resources/vars.php --kind php:7.1
 
 # Invoke them
 for i in {py2,py3,js6,js8,java,php7}; do
