@@ -29,7 +29,7 @@ waitForGreeting () {
   NOW="$(date +%s)000"
   FOUND=false
   TIMEOUT=0
-  until [ $TIMEOUT -eq 30 ]; do
+  until [ $TIMEOUT -eq 60 ]; do
     if [ -n "$(wsk -i activation list --since $NOW | grep greeting)" ]; then
       FOUND=true
       break
@@ -46,7 +46,7 @@ waitForGreeting () {
 
 cleanup () {
   wsk -i rule    delete testsh-invoke-periodically
-  wsk -i trigger delete testsh-every-other-second
+  wsk -i trigger delete testsh-every-few-seconds
   for i in $(wsk -i action list | grep testsh-vars | awk '{print $1}'); do
       wsk -i action delete $i
   done
@@ -72,11 +72,11 @@ for i in {py2,py3,js6,js8,java,php7}; do
 done
 
 # Fire a greeting every second
-wsk -i trigger create testsh-every-other-second \
+wsk -i trigger create testsh-every-few-seconds \
     --feed /whisk.system/alarms/alarm \
-    --param cron '*/2 * * * * *' \
+    --param cron '*/5 * * * * *' \
     --param trigger_payload "{\"name\":\"Odin\",\"place\":\"Asgard\"}"
-wsk -i rule create testsh-invoke-periodically testsh-every-other-second /whisk.system/samples/greeting
+wsk -i rule create testsh-invoke-periodically testsh-every-few-seconds /whisk.system/samples/greeting
 if [ ! $? -eq 0 ]; then
     fail "error: failed to create alarm trigger/rule"
 fi
