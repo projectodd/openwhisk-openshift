@@ -1,4 +1,5 @@
-FROM jboss/base:latest
+# Latest image from Mar 22nd
+FROM jboss/base@sha256:39bcf23f34ca58db0769121674d2a82aa4ea2ae9c956e280cb0ba1ef64c68b51
 
 USER root
 
