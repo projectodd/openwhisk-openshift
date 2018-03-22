@@ -896,6 +896,14 @@ objects:
                 fieldRef:
                   fieldPath: metadata.namespace
 
+            # Increase Kube API timeouts until we handle timeouts nicer
+            - name: "CONFIG_whisk_kubernetes_timeouts_run"
+              value: "10 minutes"
+            - name: "CONFIG_whisk_kubernetes_timeouts_rm"
+              value: "10 minutes"
+            - name: "CONFIG_whisk_kubernetes_timeouts_logs"
+              value: "10 minutes"
+
             # Uncomment the below to stop fetching action logs and
             # greatly increase throughput if you don't need them
             # - name: "CONFIG_whisk_spi_LogStoreProvider"
