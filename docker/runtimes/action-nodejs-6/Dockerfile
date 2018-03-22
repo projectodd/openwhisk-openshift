@@ -1,4 +1,5 @@
-FROM bucharestgold/centos7-s2i-nodejs:6.x
+# Latest image from Mar 22nd
+FROM bucharestgold/centos7-s2i-nodejs@sha256:4a6520ddaad50af4838d2f65013b350a4dd61c7db40208d5051df3226f484999
 
 ARG OPENWHISK_RUNTIME_NODEJS_VERSION="6@1.6.0"
 
