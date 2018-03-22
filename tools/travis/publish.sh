@@ -22,7 +22,6 @@ publish() {
 }
 
 publish projectodd whisk_couchdb $VERSION docker/couchdb
-publish projectodd whisk_nginx $VERSION docker/nginx
 publish projectodd whisk_catalog $VERSION docker/catalog
 publish projectodd whisk_alarms $VERSION docker/alarms
 
