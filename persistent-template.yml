@@ -1101,7 +1101,8 @@ objects:
         containers:
         - name: nginx
           imagePullPolicy: IfNotPresent
-          image: projectodd/whisk_nginx:${PROJECTODD_VERSION}
+          # Image from Mar 22nd
+          image: centos/nginx-112-centos7@sha256:42330f7f29ba1ad67819f4ff3ae2472f62de13a827a74736a5098728462212e7
           command: [ "/bin/bash", "-o", "allexport", "/nginx_config/init" ]
           env:
           - name: KUBERNETES_NAMESPACE
