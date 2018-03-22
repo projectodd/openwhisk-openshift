@@ -11,14 +11,16 @@ VERSION=${1:-$COMMIT}
 # docker login -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
 
 publish() {
-  dockerhub_image_prefix="$1"
-  dockerhub_image_name="$2"
-  dockerhub_image_tag="$3"
-  dir_to_build="$4"
-  dockerhub_image="${dockerhub_image_prefix}/${dockerhub_image_name}:${dockerhub_image_tag}"
+  prefix="$1"
+  name="$2"
+  tag="$3"
+  dir="$4"
+  image="${prefix}/${name}:${tag}"
 
-  docker build ${dir_to_build} --tag ${dockerhub_image}
-  docker push ${dockerhub_image}
+  docker build ${dir} --tag ${image}
+  if [ "${tag}" != "openshift-latest" ]; then
+    docker push ${image}
+  fi
 }
 
 publish projectodd whisk_couchdb $VERSION docker/couchdb

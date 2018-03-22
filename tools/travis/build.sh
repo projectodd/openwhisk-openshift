@@ -161,10 +161,15 @@ set -x
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 ROOTDIR="$SCRIPTDIR/../../"
-
 cd $ROOTDIR
 
+IMAGE_TAG=$1
 TEMPLATE_PARAMS="INVOKER_MEMORY_LIMIT=512Mi INVOKER_JAVA_OPTS=-Xmx256m INVOKER_MAX_CONTAINERS=2 COUCHDB_MEMORY_LIMIT=256Mi"
+
+if [ -n "$IMAGE_TAG" ]; then
+  ./tools/travis/publish.sh $IMAGE_TAG
+  TEMPLATE_PARAMS="${TEMPLATE_PARAMS} PROJECTODD_VERSION=${IMAGE_TAG}"
+fi
 oc new-project openwhisk
 oc process -f ${OPENSHIFT_TEMPLATE:-template.yml} $TEMPLATE_PARAMS | oc create -f -
 
