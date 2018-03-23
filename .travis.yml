@@ -19,7 +19,7 @@ before_install:
 
 script:
   - ./tools/travis/scancode.sh
-  - ./tools/travis/build.sh "PROJECTODD_VERSION=openshift-latest WHISK_ACTIONS_INVOKES_CONCURRENT=666"
+  - ./tools/travis/build.sh
   - ./tools/travis/test.sh
 
 after_failure:
@@ -31,15 +31,15 @@ after_failure:
 #   on:
 #     branch: master
 
-stages:
-  - docker build
-  - test
-  - deploy
+# stages:
+#   - docker build
+#   - test
+#   - deploy
 
-jobs:
-  include:
-    - stage: docker build
-      env: OPENSHIFT_TEMPLATE=template.yml
-      script: ./tools/travis/publish.sh openshift-latest
-    - stage: deploy
-      env: OPENSHIFT_TEMPLATE=template.yml
+# jobs:
+#   include:
+#     - stage: docker build
+#       env: OPENSHIFT_TEMPLATE=template.yml
+#       script: ./tools/travis/publish.sh openshift-latest
+#     - stage: deploy
+#       env: OPENSHIFT_TEMPLATE=template.yml
