@@ -29,7 +29,7 @@ waitForGreeting () {
   NOW="$(date +%s)000"
   FOUND=false
   TIMEOUT=0
-  until [ $TIMEOUT -eq 120 ]; do
+  until [ $TIMEOUT -eq 600 ]; do
     if [ -n "$(wsk -i activation list --since $NOW | grep greeting)" ]; then
       FOUND=true
       break
