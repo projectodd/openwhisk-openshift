@@ -19,7 +19,7 @@ before_install:
 
 script:
   - ./tools/travis/scancode.sh
-  - ./tools/travis/build.sh
+  - ./tools/travis/build.sh "WHISK_ACTIONS_INVOKES_CONCURRENT=666"
   - ./tools/travis/test.sh
 
 after_failure:
