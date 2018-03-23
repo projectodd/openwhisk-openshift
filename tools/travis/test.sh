@@ -29,7 +29,7 @@ waitForGreeting () {
   NOW="$(date +%s)000"
   FOUND=false
   TIMEOUT=0
-  until [ $TIMEOUT -eq 600 ]; do
+  until [ $TIMEOUT -eq 30 ]; do
     if [ -n "$(wsk -i activation list --since $NOW | grep greeting)" ]; then
       FOUND=true
       break
@@ -42,6 +42,15 @@ waitForGreeting () {
   if [ "$FOUND" = false ]; then
     fail "error: unable to detect a greeting activation"
   fi
+}
+
+deleteTerminatingPods () {
+  oc get pods
+  for pod in $(oc get pod | grep Terminating | cut -f 1 -d ' '); do
+    oc delete pod $pod --force --grace-period=0
+  done
+  sleep 1
+  oc get pods
 }
 
 cleanup () {
@@ -66,9 +75,10 @@ wsk -i action create testsh-vars-js8 resources/vars.js --kind nodejs:8
 wsk -i action create testsh-vars-java resources/vars.jar --main Vars
 wsk -i action create testsh-vars-php7 resources/vars.php --kind php:7.1
 
-# Invoke them
+# Invoke them, and delete them
 for i in {py2,py3,js6,js8,java,php7}; do
     invoke testsh-vars-$i
+    wsk -i action delete testsh-vars-$i
 done
 
 # Fire a greeting every second
@@ -81,7 +91,9 @@ if [ ! $? -eq 0 ]; then
     fail "error: failed to create alarm trigger/rule"
 fi
 # Account for stale reads in activation list
+deleteTerminatingPods
 waitForGreeting
+
 # Grab the id for the most recent greeting
 ID=$(wsk -i activation list | grep greeting | head -1 | awk '{print $1}')
 # Ensure we see our expected greeting
