@@ -38,6 +38,7 @@ echo ""
 echo ""
 echo "### PODS ###"
 oc get pods -o wide --show-all
+oc describe pods
 echo ""
 echo ""
 echo "### NODES ###"
