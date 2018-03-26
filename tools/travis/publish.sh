@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# Pass in the tag you want to use for docker build+push. By default,
+# it'll be the most recent commit sha. If you pass the special tag,
+# "openshift-latest", the push will be skipped.
+
 set -exu
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
@@ -8,7 +13,7 @@ cd $ROOTDIR
 COMMIT=$(git rev-parse HEAD | cut -c 1-7)
 VERSION=${1:-$COMMIT}
 
-if [ "${tag}" != "openshift-latest" ]; then
+if [ "${VERSION}" != "openshift-latest" ]; then
   docker login -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
 fi
 
