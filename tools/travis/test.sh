@@ -74,9 +74,10 @@ wsk -i action create testsh-vars-js6 resources/vars.js --kind nodejs:6
 wsk -i action create testsh-vars-js8 resources/vars.js --kind nodejs:8
 wsk -i action create testsh-vars-java resources/vars.jar --main Vars
 wsk -i action create testsh-vars-php7 resources/vars.php --kind php:7.1
+wsk -i action create testsh-vars-sh resources/vars.sh --native
 
 # Invoke them, and delete them
-for i in {py2,py3,js6,js8,java,php7}; do
+for i in {py2,py3,js6,js8,java,php7,sh}; do
     invoke testsh-vars-$i
     wsk -i action delete testsh-vars-$i
 done
