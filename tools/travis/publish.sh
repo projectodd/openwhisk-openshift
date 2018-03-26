@@ -8,7 +8,9 @@ cd $ROOTDIR
 COMMIT=$(git rev-parse HEAD | cut -c 1-7)
 VERSION=${1:-$COMMIT}
 
-# docker login -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
+if [ "${tag}" != "openshift-latest" ]; then
+  docker login -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
+fi
 
 publish() {
   prefix="$1"
