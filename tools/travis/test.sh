@@ -45,12 +45,9 @@ waitForGreeting () {
 }
 
 deleteTerminatingPods () {
-  oc get pods
   for pod in $(oc get pod | grep Terminating | cut -f 1 -d ' '); do
     oc delete pod $pod --force --grace-period=0
   done
-  sleep 1
-  oc get pods
 }
 
 cleanup () {
@@ -80,6 +77,7 @@ wsk -i action create testsh-vars-sh resources/vars.sh --native
 for i in {py2,py3,js6,js8,java,php7,sh}; do
     invoke testsh-vars-$i
     wsk -i action delete testsh-vars-$i
+    deleteTerminatingPods
 done
 
 # Fire a greeting every second
