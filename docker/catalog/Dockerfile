@@ -1,21 +1,22 @@
-from ubuntu:latest
+# Latest images from Mar 22nd
+FROM jboss/base@sha256:39bcf23f34ca58db0769121674d2a82aa4ea2ae9c956e280cb0ba1ef64c68b51
 
-RUN apt-get -y update && apt-get -y install \
-  git \
-  wget
+ENV \
+  OPENWHISK_CATALOG_SHA=654b24b45600506f6dc787b4c178b0cfea963bd2 \
+  OPENWHISK_HOME=/openwhisk
 
-COPY init.sh /init.sh
-RUN chmod +X /init.sh
+USER root
 
-# Ensure we can write to needed directories on OpenShift
-RUN mkdir -p /openwhisk \
-  && chgrp -R 0 /openwhisk \
-  && chmod -R g+rwX /openwhisk \
-  && mkdir -p /openwhisk-catalog \
-  && chgrp -R 0 /openwhisk-catalog \
-  && chmod -R g+rwX /openwhisk-catalog \
-  && mkdir -p /.npm \
-  && chgrp -R 0 /.npm \
-  && chmod -R g+rwX /.npm
+RUN \
+  # Install CLI
+  mkdir -p $OPENWHISK_HOME/bin \
+  && curl -L https://github.com/apache/incubator-openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-linux-amd64.tgz | tar -xzf - -C $OPENWHISK_HOME/bin \
+  # Install catalog packages
+  && mkdir -p $OPENWHISK_HOME/catalog \
+  && curl -L https://github.com/apache/incubator-openwhisk-catalog/archive/$OPENWHISK_CATALOG_SHA.tar.gz | tar --strip-components=2 -C $OPENWHISK_HOME/catalog -xzf - incubator-openwhisk-catalog-$OPENWHISK_CATALOG_SHA/packages/ \
+  # Change the owner + OpenShift compatibility
+  && for d in /openwhisk /.npm; do mkdir -p $d; chown jboss:root -R $d; chmod -R g+rwX $d; done
 
-CMD ["/init.sh"]
+USER 1000
+
+CMD ["/bin/sh", "-xc", "$OPENWHISK_HOME/catalog/installCatalog.sh $WHISK_AUTH $WHISK_API_HOST_NAME $OPENWHISK_HOME/bin/wsk"]

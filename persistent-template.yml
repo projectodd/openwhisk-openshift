@@ -157,7 +157,6 @@ objects:
   metadata:
     name: whisk.config
   data:
-    whisk_cli_version_tag: latest
     whisk_system_namespace: /whisk.system
     whisk_version_date: 2018-01-01T00:00:00Z
     whisk_version_name: OpenWhisk
@@ -535,11 +534,6 @@ objects:
         - name: catalog
           image: projectodd/whisk_catalog:${PROJECTODD_VERSION}
           env:
-            - name: "WHISK_CLI_VERSION"
-              valueFrom:
-                configMapKeyRef:
-                  name: whisk.config
-                  key: whisk_cli_version_tag
             - name: "WHISK_AUTH"
               valueFrom:
                 secretKeyRef:
