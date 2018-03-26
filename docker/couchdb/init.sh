@@ -11,7 +11,7 @@ fi
 # wait for couchdb to be up and running
 TIMEOUT=0
 echo "wait for CouchDB to be up and running"
-until $( curl --output /dev/null --silent http://localhost:$DB_PORT/_utils ) || [ $TIMEOUT -eq 30 ]; do
+until $( curl --location --output /dev/null --fail --head --silent http://localhost:$DB_PORT/_utils ) || [ $TIMEOUT -eq 30 ]; do
   echo "waiting for CouchDB to be available"
   sleep 2
   let TIMEOUT=TIMEOUT+1
@@ -57,7 +57,7 @@ if [ ! -f /opt/couchdb/data/_openwhisk_initialized.stamp ]; then
     fi
 
     # Fake our UID because OpenShift runs with random uids
-    export LD_PRELOAD=/usr/lib/libuid_wrapper.so
+    export LD_PRELOAD=/usr/lib64/libuid_wrapper.so
     export UID_WRAPPER=1
     export UID_WRAPPER_ROOT=1
 
