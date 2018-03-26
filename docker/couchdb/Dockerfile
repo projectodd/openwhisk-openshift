@@ -1,49 +1,30 @@
-FROM apache/couchdb:2.1
+# Latest images from Mar 22nd
+FROM jboss/base@sha256:39bcf23f34ca58db0769121674d2a82aa4ea2ae9c956e280cb0ba1ef64c68b51
 
-ADD http://ftp.us.debian.org/debian/pool/main/a/apt/apt-transport-https_1.0.9.8.4_amd64.deb /tmp/apt-transport-https_1.0.9.8.4_amd64.deb
-ADD http://ftp.us.debian.org/debian/pool/main/c/curl/libcurl3-gnutls_7.38.0-4+deb8u8_amd64.deb /tmp/libcurl3-gnutls_7.38.0-4+deb8u58_amd64.deb
-RUN dpkg -i /tmp/libcurl3-gnutls_7.38.0-4+deb8u58_amd64.deb
-RUN dpkg -i /tmp/apt-transport-https_1.0.9.8.4_amd64.deb
-
-RUN apt-get -y update && apt-get -y install \
-  git \
-  curl \
-  sudo \
-  python-dev \
-  python-pip \
-  libffi-dev \
-  libuid-wrapper \
-  libssl-dev
-
-RUN pip install --upgrade setuptools
-RUN pip install argcomplete
-RUN pip install couchdb
-RUN pip install --upgrade cffi
-RUN pip install markupsafe
-RUN pip install ansible==2.3.0.0
-RUN pip install -U pyopenssl
-
-ARG OPENWHISK_REPO_URL=https://github.com/apache/incubator-openwhisk
-ARG OPENWHISK_REPO_HASH=fbc0091
-
-RUN git clone $OPENWHISK_REPO_URL /openwhisk && \
-    cd /openwhisk && \
-    git reset --hard $OPENWHISK_REPO_HASH
-
-RUN chgrp -R 0 /openwhisk && \
-    chmod -R g=u /openwhisk && \
-    chgrp -R 0 /opt/couchdb && \
-    chmod -R g=u /opt/couchdb && \
-    chmod -R 0770 /opt/couchdb/data && \
-    chmod 664 /opt/couchdb/etc/*.ini && \
-    chmod 664 /opt/couchdb/etc/local.d/*.ini && \
-    chmod 775 /opt/couchdb/etc/*.d && \
-    mkdir -p /.ansible && \
-    chgrp -R 0 /.ansible && \
-    chmod -R g+rwX /.ansible
-
+COPY couchdb.repo /etc/yum.repos.d/couchdb.repo
 COPY init.sh /init.sh
 COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /init.sh /docker-entrypoint.sh
+
+ARG OPENWHISK_REPO_HASH=fbc009170295a23473b1ee390985d4b4dda4aad0
+
+USER root
+
+RUN yum -y --setopt=tsflags=nodocs install epel-release \
+  && yum -y --setopt=tsflags=nodocs install couchdb python2-pip gcc python-devel uid_wrapper openssl \
+  && pip install -U ansible==2.3.0.0 couchdb argcomplete cffi markupsafe pyopenssl \
+  && yum -y remove gcc python-devel \
+  && yum clean all \
+  && rm -rf /var/cache/yum \
+  && chmod +x /init.sh /docker-entrypoint.sh \
+  && mkdir /openwhisk \
+  && mkdir /.ansible \
+  && cd /openwhisk \
+  && curl -L -o owsk.tar.gz https://github.com/apache/incubator-openwhisk/archive/$OPENWHISK_REPO_HASH.tar.gz \
+  && tar --strip-components=1 -xf owsk.tar.gz \
+  && rm -rf owsk.tar.gz \
+  && for d in /openwhisk /opt/couchdb /var/lib/couchdb /var/log/couchdb/ /.ansible; do chown jboss:root -R $d; chmod -R g+rwX $d; done
+
+USER 1000
 
 CMD ["/init.sh"]
+

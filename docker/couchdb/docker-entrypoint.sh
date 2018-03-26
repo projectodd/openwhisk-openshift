@@ -36,7 +36,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
     printf "[httpd]\n%s = %s\n" "bind_address" "any" >> $INI_FILE
 	fi
 
-  if [ $COUCHDB_NODE_COUNT -gt 1 ]; then
+  if [ "$COUCHDB_NODE_COUNT" -gt "1" ]; then
     printf "[cluster]\n%s = %s\n" "n" "$COUCHDB_NODE_COUNT" >> $INI_FILE
   fi
 
