@@ -25,11 +25,11 @@ script:
 after_failure:
   - ./tools/travis/collect-logs.sh
 
-deploy:
-- provider: script
-  script: ./tools/travis/publish.sh
-  on:
-    branch: master
+# deploy:
+# - provider: script
+#   script: ./tools/travis/publish.sh
+#   on:
+#     branch: master
 
 stages:
   - docker build
