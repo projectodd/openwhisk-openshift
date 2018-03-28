@@ -986,7 +986,7 @@ objects:
   data:
     init: |
       cp /nginx_config/nginx.conf /tmp/nginx.conf
-      sed -i "s/<kubernetes_service_host>/${KUBERNETES_SERVICE_HOST}/" /tmp/nginx.conf
+      sed -i "s/<kubernetes_service_host>/$(grep nameserver /etc/resolv.conf | head -1 | awk '{print $2}')/" /tmp/nginx.conf
       sed -i "s/<kubernetes_namespace>/${KUBERNETES_NAMESPACE}/" /tmp/nginx.conf
       exec nginx -c /tmp/nginx.conf -g "daemon off;"
     nginx.conf: |
