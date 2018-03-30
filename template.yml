@@ -60,6 +60,10 @@ parameters:
   description: Maximum time an idle function container should stick around before the Invoker deletes it. The longer the timeout, the longer functions stay warm. The shorter the timeout, the less resources consumed by idle function containers. Example values - "5 minutes", "30 seconds", etc.
   value: "2 minutes"
   required: true
+- name: INVOKER_CONTAINER_PAUSE_TIMEOUT
+  description: Maximum time an idle function container should stick around before the Invoker marks it as paused. Example values - "5 seconds", "500 milliseconds", etc.
+  value: "5 seconds"
+  required: true
 - name: COUCHDB_INSTANCES
   description: The desired number of CouchDB nodes
   value: "1"
@@ -773,6 +777,8 @@ objects:
               value: "${INVOKER_MAX_CONTAINERS}"
             - name: "CONFIG_whisk_containerProxy_timeouts_idleContainer"
               value: "${INVOKER_CONTAINER_TIMEOUT}"
+            - name: "CONFIG_whisk_containerProxy_timeouts_pauseGrace"
+              value: "${INVOKER_CONTAINER_PAUSE_TIMEOUT}"
             - name: "DOCKER_IMAGE_PREFIX"
               valueFrom:
                 configMapKeyRef:
