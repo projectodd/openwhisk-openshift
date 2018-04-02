@@ -148,11 +148,11 @@ parameters:
   required: true
 - name: OPENWHISK_VERSION
   description: The DockerHub tag for openwhisk/{controller,invoker}
-  value: "rhdemo-7643de9"
+  value: "rhdemo-b7724ef"
   required: true
 - name: PROJECTODD_VERSION
   description: The DockerHub tag for projectodd images
-  value: "1d612c2"
+  value: "cc60dfe"
   required: true
 
 objects:
@@ -536,7 +536,7 @@ objects:
       spec:
         containers:
         - name: catalog
-          image: projectodd/whisk_catalog:${PROJECTODD_VERSION}
+          image: projectodd/whisk_catalog:da00e0c
           env:
             - name: "WHISK_AUTH"
               valueFrom:
@@ -1010,6 +1010,7 @@ objects:
               '$request $status $body_bytes_sent '
               '$http_referer $http_user_agent $upstream_addr';
           access_log /logs/nginx_access.log combined-upstream;
+          error_log /logs/nginx_error.log;
 
           proxy_http_version 1.1;
           proxy_set_header Connection "";
