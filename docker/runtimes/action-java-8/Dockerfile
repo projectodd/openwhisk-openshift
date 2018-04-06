@@ -22,4 +22,4 @@ RUN chgrp -R 0 /opt/jboss \
 
 USER 1000
 
-CMD ["java", "-jar", "/opt/jboss/javaAction-all.jar"]
+CMD ["java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-jar", "/opt/jboss/javaAction-all.jar"]
