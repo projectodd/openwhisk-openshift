@@ -20,6 +20,10 @@ parameters:
   description: The desired number of controllers
   value: "1"
   required: true
+- name: CONTROLLER_MEMORY_REQUEST
+  description: The minimum container memory for each Controller
+  value: "512Mi"
+  required: true
 - name: CONTROLLER_MEMORY_LIMIT
   description: The maximum container memory for each Controller
   value: "512Mi"
@@ -44,6 +48,10 @@ parameters:
   description: The desired number of invokers
   value: "1"
   required: true
+- name: INVOKER_MEMORY_REQUEST
+  description: The minimum container memory for each Invoker
+  value: "1Gi"
+  required: true
 - name: INVOKER_MEMORY_LIMIT
   description: The maximum container memory for each Invoker
   value: "1Gi"
@@ -67,6 +75,10 @@ parameters:
 - name: COUCHDB_INSTANCES
   description: The desired number of CouchDB nodes
   value: "1"
+  required: true
+- name: COUCHDB_MEMORY_REQUEST
+  description: The minimum container memory for each CouchDB
+  value: "256Mi"
   required: true
 - name: COUCHDB_MEMORY_LIMIT
   description: The maximum container memory for each CouchDB
@@ -348,6 +360,8 @@ objects:
           - name: controller
             containerPort: 8080
           resources:
+            requests:
+              memory: ${CONTROLLER_MEMORY_REQUEST}
             limits:
               memory: ${CONTROLLER_MEMORY_LIMIT}
           env:
@@ -604,6 +618,8 @@ objects:
             containerPort: 4369
           - containerPort: 9100
           resources:
+            requests:
+              memory: ${COUCHDB_MEMORY_REQUEST}
             limits:
               memory: ${COUCHDB_MEMORY_LIMIT}
           env:
@@ -740,6 +756,8 @@ objects:
           - name: invoker
             containerPort: 8080
           resources:
+            requests:
+              memory: ${INVOKER_MEMORY_REQUEST}
             limits:
               memory: ${INVOKER_MEMORY_LIMIT}
           volumeMounts:
