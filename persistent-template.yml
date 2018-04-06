@@ -164,7 +164,7 @@ parameters:
   required: true
 - name: PROJECTODD_VERSION
   description: The DockerHub tag for projectodd images
-  value: "cc60dfe"
+  value: "22d2f6c"
   required: true
 
 objects:
@@ -630,7 +630,7 @@ objects:
         containers:
         - name: couchdb
           imagePullPolicy: IfNotPresent
-          image: projectodd/whisk_couchdb:${PROJECTODD_VERSION}
+          image: projectodd/whisk_couchdb:cc60dfe
           command: ["/init.sh"]
           ports:
           - name: couchdb
@@ -1355,7 +1355,7 @@ objects:
             restartPolicy: Never
             containers:
             - name: refresh-activations
-              image: projectodd/whisk_couchdb:${PROJECTODD_VERSION}
+              image: projectodd/whisk_couchdb:cc60dfe
               command: ["/bin/bash", "-c", "set -x; /openwhisk/tools/db/deleteLogsFromActivations.py --dbUrl http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB --dbName $DB_ACTIVATIONS --days $DB_DAYS_TO_KEEP_LOGS; /openwhisk/tools/db/cleanUpActivations.py --dbUrl http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB --dbName $DB_ACTIVATIONS --days $DB_DAYS_TO_KEEP_ACTIVATIONS"]
               env:
               - name: "DB_USERNAME"
