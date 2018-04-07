@@ -24,7 +24,7 @@ RUN yum -y --setopt=tsflags=nodocs install epel-release \
   && tar --strip-components=1 -xf owsk.tar.gz \
   && rm -rf owsk.tar.gz \
   && for d in /openwhisk /opt/couchdb /var/lib/couchdb /var/log/couchdb/ /.ansible; do chown jboss:root -R $d; chmod -R g+rwX $d; done \
-  && rm -f /opt/couchdb/default.d/*.ini
+  && rm -f /opt/couchdb/etc/default.d/*.ini
 
 WORKDIR /opt/couchdb
 EXPOSE 5984 4369 9100
