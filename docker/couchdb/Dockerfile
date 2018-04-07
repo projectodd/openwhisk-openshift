@@ -22,16 +22,17 @@ RUN yum -y --setopt=tsflags=nodocs install epel-release \
   && cd /openwhisk \
   && curl -L -o owsk.tar.gz $OPENWHISK_REPO_URL/archive/$OPENWHISK_REPO_HASH.tar.gz \
   && tar --strip-components=1 -xf owsk.tar.gz \
-  && rm -rf owsk.tar.gz \
-  && for d in /openwhisk /opt/couchdb /var/lib/couchdb /var/log/couchdb/ /.ansible; do chown jboss:root -R $d; chmod -R g+rwX $d; done \
-  && rm -f /opt/couchdb/etc/default.d/*.ini
+  && rm -rf owsk.tar.gz
+
+COPY vm.args /opt/couchdb/etc/
+
+RUN rm -f /opt/couchdb/etc/default.d/*.ini \
+  && for d in /openwhisk /opt/couchdb /var/lib/couchdb /var/log/couchdb/ /.ansible; do chown jboss:root -R $d; chmod -R g+rwX $d; done
 
 WORKDIR /opt/couchdb
 EXPOSE 5984 4369 9100
 
 USER 1000
-
-COPY vm.args /opt/couchdb/etc/
 
 CMD ["/init.sh"]
 
