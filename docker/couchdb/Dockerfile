@@ -4,7 +4,6 @@ FROM jboss/base@sha256:39bcf23f34ca58db0769121674d2a82aa4ea2ae9c956e280cb0ba1ef6
 COPY couchdb.repo /etc/yum.repos.d/couchdb.repo
 COPY init.sh /init.sh
 COPY docker-entrypoint.sh /docker-entrypoint.sh
-COPY vm.args /opt/couchdb/etc/
 
 ARG OPENWHISK_REPO_URL=https://github.com/apache/incubator-openwhisk
 ARG OPENWHISK_REPO_HASH=fbc0091
@@ -31,6 +30,8 @@ WORKDIR /opt/couchdb
 EXPOSE 5984 4369 9100
 
 USER 1000
+
+COPY vm.args /opt/couchdb/etc/
 
 CMD ["/init.sh"]
 
