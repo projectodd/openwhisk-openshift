@@ -4,8 +4,10 @@ FROM jboss/base@sha256:39bcf23f34ca58db0769121674d2a82aa4ea2ae9c956e280cb0ba1ef6
 COPY couchdb.repo /etc/yum.repos.d/couchdb.repo
 COPY init.sh /init.sh
 COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY vm.args /opt/couchdb/etc/
 
-ARG OPENWHISK_REPO_HASH=fbc009170295a23473b1ee390985d4b4dda4aad0
+ARG OPENWHISK_REPO_URL=https://github.com/apache/incubator-openwhisk
+ARG OPENWHISK_REPO_HASH=fbc0091
 
 USER root
 
@@ -19,10 +21,14 @@ RUN yum -y --setopt=tsflags=nodocs install epel-release \
   && mkdir /openwhisk \
   && mkdir /.ansible \
   && cd /openwhisk \
-  && curl -L -o owsk.tar.gz https://github.com/apache/incubator-openwhisk/archive/$OPENWHISK_REPO_HASH.tar.gz \
+  && curl -L -o owsk.tar.gz $OPENWHISK_REPO_URL/archive/$OPENWHISK_REPO_HASH.tar.gz \
   && tar --strip-components=1 -xf owsk.tar.gz \
   && rm -rf owsk.tar.gz \
-  && for d in /openwhisk /opt/couchdb /var/lib/couchdb /var/log/couchdb/ /.ansible; do chown jboss:root -R $d; chmod -R g+rwX $d; done
+  && for d in /openwhisk /opt/couchdb /var/lib/couchdb /var/log/couchdb/ /.ansible; do chown jboss:root -R $d; chmod -R g+rwX $d; done \
+  && rm -f /opt/couchdb/default.d/*.ini
+
+WORKDIR /opt/couchdb
+EXPOSE 5984 4369 9100
 
 USER 1000
 
