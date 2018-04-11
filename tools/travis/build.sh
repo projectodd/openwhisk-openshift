@@ -4,6 +4,12 @@
 # Helper functions for verifying pod creation
 #################
 
+deleteTerminatingPods () {
+  for pod in $(oc get pod | grep Terminating | cut -f 1 -d ' '); do
+    oc delete pod $pod --force --grace-period=0
+  done
+}
+
 couchdbHealthCheck () {
   # wait for the pod to be created before getting the job name
   sleep 5
@@ -39,6 +45,8 @@ deploymentHealthCheck () {
     echo "Error, component health check called without a component parameter"
     exit 1
   fi
+
+  deleteTerminatingPods
 
   PASSED=false
   TIMEOUT=0
