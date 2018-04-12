@@ -194,6 +194,13 @@ You can generate in-cluster load with `wrk`
     wsk -i action create helloWeb helloWeb.js --web=true
     oc run -it --image williamyeh/wrk wrk --restart=Never --rm   --overrides='{"apiVersion":"v1", "spec":{"volumes":[{"name": "data", "emptyDir": {}}], "containers":[{"name": "wrk", "image": "williamyeh/wrk", "args": ["--threads", "4", "--connections", "50", "--duration", "30s", "--latency", "--timeout", "10s", "http://nginx/api/v1/web/whisk.system/default/helloWeb"], "volumeMounts": [{"mountPath": "/data", "name": "data"}]}]}}'
 
+### Activation statistics
+
+The `bin/activationStats.sh` script can output throughput and waitTime
+numbers for recent function activations. This is useful when
+spot-checking overall system load and how long functions are waiting
+in queues inside OpenWhisk before being invoked.
+
 ## Common Problems
 
 ### Catalog of actions empty
