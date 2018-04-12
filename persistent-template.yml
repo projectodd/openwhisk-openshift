@@ -42,7 +42,7 @@ parameters:
   required: true
 - name: AKKA_CLUSTER_SEED_NODES
   description: Hostnames of akka seed nodes
-  value: "controller-0.controller controller-1.controller"
+  value: "controller-0.controller:2551"
   required: true
 - name: INVOKER_INSTANCES
   description: The desired number of invokers
@@ -615,11 +615,13 @@ objects:
         containers:
         - name: controller
           imagePullPolicy: IfNotPresent
-          image: controller:${OPENWHISK_VERSION}
-          command: ["/bin/bash", "-c", "COMPONENT_NAME=$(hostname | cut -d'-' -f2) /init.sh `hostname | cut -d'-' -f2`"]
+          image: projectodd/controller:${OPENWHISK_VERSION}
+          command: ["/bin/bash", "-c", "COMPONENT_NAME=$(hostname | cut -d'-' -f2) CONFIG_akka_remote_netty_tcp_hostname=$(hostname).controller /init.sh `hostname | cut -d'-' -f2`"]
           ports:
           - name: controller
             containerPort: 8080
+          - name: akka
+            containerPort: 2551
           resources:
             requests:
               memory: ${CONTROLLER_MEMORY_REQUEST}
@@ -638,6 +640,12 @@ objects:
             value: ${AKKA_CLUSTER_SEED_NODES}
           - name: "CONFIG_akka_actor_provider"
             value: "cluster"
+          - name: "CONFIG_akka_remote_netty_tcp_bindPort"
+            value: "2551"
+          - name: "CONFIG_akka_remote_netty_tcp_port"
+            value: "2551"
+          - name: "CONFIG_whisk_loadbalancer_invokerBusyThreshold"
+            value: "${INVOKER_MAX_CONTAINERS}"
   
           # extra JVM arguments
           - name: "JAVA_OPTS"
