@@ -176,36 +176,6 @@ objects:
 - apiVersion: "v1"
   kind: "ImageStream"
   metadata:
-    name: "zookeeper"
-  spec:
-    dockerImageRepository: "docker.io/strimzi/zookeeper"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/strimzi/zookeeper:${STRIMZI_VERSION}
-      name: ${STRIMZI_VERSION}
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "kafka"
-  spec:
-    dockerImageRepository: "docker.io/strimzi/kafka"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/strimzi/kafka:${STRIMZI_VERSION}
-      name: ${STRIMZI_VERSION}
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
     name: "controller"
   spec:
     dockerImageRepository: "docker.io/projectodd/controller"
@@ -545,11 +515,11 @@ objects:
       strimzi.io/kind: cluster
   data:
     kafka-nodes: "${KAFKA_NODE_COUNT}"
-    kafka-image: "kafka:${STRIMZI_VERSION}"
+    kafka-image: "strimzi/kafka:${STRIMZI_VERSION}"
     kafka-healthcheck-delay: "15"
     kafka-healthcheck-timeout: "5"
     zookeeper-nodes: "${ZOOKEEPER_NODE_COUNT}"
-    zookeeper-image: "zookeeper:${STRIMZI_VERSION}"
+    zookeeper-image: "strimzi/zookeeper:${STRIMZI_VERSION}"
     zookeeper-healthcheck-delay: "15"
     zookeeper-healthcheck-timeout: "5"
     KAFKA_DEFAULT_REPLICATION_FACTOR: "${KAFKA_NODE_COUNT}"
@@ -600,7 +570,7 @@ objects:
         containers:
         - name: controller
           imagePullPolicy: IfNotPresent
-          image: projectodd/controller:${OPENWHISK_VERSION}
+          image: controller:${OPENWHISK_VERSION}
           command: ["/bin/bash", "-c", "COMPONENT_NAME=$(hostname | cut -d'-' -f2) CONFIG_akka_remote_netty_tcp_hostname=$(hostname).controller /init.sh `hostname | cut -d'-' -f2`"]
           ports:
           - name: controller
@@ -1438,11 +1408,11 @@ objects:
             periodSeconds: 30
         initContainers:
         - name: preload-strimzi-zookeeper
-          image: zookeeper:${STRIMZI_VERSION}
+          image: strimzi/zookeeper:${STRIMZI_VERSION}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         - name: preload-strimzi-kafka
-          image: kafka:${STRIMZI_VERSION}
+          image: strimzi/kafka:${STRIMZI_VERSION}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
 - apiVersion: v1
