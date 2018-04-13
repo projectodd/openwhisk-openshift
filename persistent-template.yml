@@ -168,7 +168,7 @@ parameters:
   required: true
 - name: OPENWHISK_VERSION
   description: The DockerHub tag for openwhisk/{controller,invoker}
-  value: "rhdemo-b7724ef"
+  value: "rhdemo-6cfa698e"
   required: true
 - name: PROJECTODD_VERSION
   description: The DockerHub tag for projectodd images
