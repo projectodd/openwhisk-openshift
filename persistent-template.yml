@@ -48,6 +48,10 @@ parameters:
   description: The desired number of invokers
   value: "1"
   required: true
+- name: INVOKER_CPU_REQUEST
+  description: The minimum cpu cores for each Invoker
+  value: "500m"
+  required: true
 - name: INVOKER_MEMORY_REQUEST
   description: The minimum container memory for each Invoker
   value: "1Gi"
@@ -75,6 +79,10 @@ parameters:
 - name: COUCHDB_INSTANCES
   description: The desired number of CouchDB nodes
   value: "1"
+  required: true
+- name: COUCHDB_CPU_REQUEST
+  description: The minimum cpu cores for each CouchDB
+  value: "500m"
   required: true
 - name: COUCHDB_MEMORY_REQUEST
   description: The minimum container memory for each CouchDB
@@ -864,6 +872,7 @@ objects:
           - containerPort: 9100
           resources:
             requests:
+              cpu: "${COUCHDB_CPU_REQUEST}"
               memory: ${COUCHDB_MEMORY_REQUEST}
             limits:
               memory: ${COUCHDB_MEMORY_LIMIT}
@@ -1001,6 +1010,7 @@ objects:
             containerPort: 8080
           resources:
             requests:
+              cpu: "${INVOKER_CPU_REQUEST}"
               memory: ${INVOKER_MEMORY_REQUEST}
             limits:
               memory: ${INVOKER_MEMORY_LIMIT}
