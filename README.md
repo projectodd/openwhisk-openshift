@@ -122,20 +122,25 @@ Then when you build the OW images, override the prefix and tag:
 
     ./gradlew distDocker -PdockerImagePrefix=projectodd -PdockerImageTag=whatever
 
-The `projectodd` prefix matters, because it's expected by our
-template. The `whatever` tag doesn't matter, because it's simply
-passed as a parameter to the template to identify the image you just
-built:
+The `projectodd` prefix and `whatever` tag can be anything you like.
+You'll patch the running StatefulSets to refer to them so that any new
+pods they create will use your images.
 
-    oc process -f template.yml OPENWHISK_VERSION=whatever | oc create -f -
+    # Patch the controller's StatefulSet
+    oc patch statefulset controller -p '{"spec":{"template":{"spec":{"containers":[{"name":"controller","image":"projectodd/controller:whatever"}]}}}}'
 
-Once everything is running, your *build-test-debug* cycle will require
-deleting the relevant pod, e.g. `controller-0` or `invoker-0`, after
-running your `distDocker` task, e.g. `core:controller:distDocker` or
-`core:invoker:distDocker`. This will trigger the corresponding
-deployment to create a new pod using your new image.
+    # Patch the invoker's StatefulSet
+    oc patch statefulset invoker -p '{"spec":{"template":{"spec":{"containers":[{"name":"invoker","image":"projectodd/invoker:whatever"}]}}}}'
 
-    oc delete --force --now pod controller-0 invoker-0
+    # Now delete one or both pods to run your latest images
+    oc delete --force --now pod invoker-0 controller-0
+
+With the StatefulSets patched, your *build-test-debug* cycle amounts
+to this: edit the source, run your `distDocker` task, e.g.
+`core:controller:distDocker` or `core:invoker:distDocker` with the
+above prefix/tag, and finally delete the relevant pod, e.g.
+`controller-0` or `invoker-0`. This will trigger your patched
+StatefulSet to create a new pod with your changes.
 
 Allow some time for the components to cleanly shutdown and rediscover
 themselves, of course. And while you're waiting, consider coming up
