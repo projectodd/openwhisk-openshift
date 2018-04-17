@@ -524,11 +524,11 @@ objects:
   data:
     kafka-nodes: "${KAFKA_NODE_COUNT}"
     kafka-image: "strimzi/kafka:${STRIMZI_VERSION}"
-    kafka-healthcheck-delay: "15"
+    kafka-healthcheck-delay: "60"
     kafka-healthcheck-timeout: "5"
     zookeeper-nodes: "${ZOOKEEPER_NODE_COUNT}"
     zookeeper-image: "strimzi/zookeeper:${STRIMZI_VERSION}"
-    zookeeper-healthcheck-delay: "15"
+    zookeeper-healthcheck-delay: "30"
     zookeeper-healthcheck-timeout: "5"
     KAFKA_DEFAULT_REPLICATION_FACTOR: "${KAFKA_NODE_COUNT}"
     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "${KAFKA_NODE_COUNT}"
