@@ -42,7 +42,7 @@ parameters:
   required: true
 - name: CONTROLLER_INVOKER_BUSYTHRESHOLD
   description: Value that controllers when the Controller(s) considers the Invoker(s) to be full. This should be less than or equal to INVOKER_MAX_CONTAINERS. Making them equal will give the highest function density but setting it a bit less than INVOKER_MAX_CONTAINERS can improve overall system throughput and reduce Invoker function container thrashing.
-  value: 8
+  value: "8"
   required: true
 - name: AKKA_CLUSTER_SEED_NODES
   description: Hostnames of akka seed nodes
