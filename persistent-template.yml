@@ -40,6 +40,10 @@ parameters:
   description: Boolean denoting whether load balancer data is local or shared
   value: "TRUE"
   required: true
+- name: CONTROLLER_INVOKER_BUSYTHRESHOLD
+  description: Value that controllers when the Controller(s) considers the Invoker(s) to be full. This should be less than or equal to INVOKER_MAX_CONTAINERS. Making them equal will give the highest function density but setting it a bit less than INVOKER_MAX_CONTAINERS can improve overall system throughput and reduce Invoker function container thrashing.
+  value: 8
+  required: true
 - name: AKKA_CLUSTER_SEED_NODES
   description: Hostnames of akka seed nodes
   value: "controller-0.controller:2551"
@@ -623,7 +627,7 @@ objects:
           - name: "CONFIG_akka_remote_netty_tcp_port"
             value: "2551"
           - name: "CONFIG_whisk_loadbalancer_invokerBusyThreshold"
-            value: "${INVOKER_MAX_CONTAINERS}"
+            value: "${CONTROLLER_INVOKER_BUSYTHRESHOLD}"
   
           # extra JVM arguments
           - name: "JAVA_OPTS"
