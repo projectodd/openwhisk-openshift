@@ -30,8 +30,8 @@ for skip in {0..10000..200}; do
     break
   fi
   limit=$(($skip + $step > $count ? $count - $skip : $step))
-  wsk activation list $func -l $limit -s $skip -f | grep end | awk '{print $2}' | tr -d "," >> $dir/throughput
-  wsk activation list $func -l $limit -s $skip -f | grep -A 1 waitTime | grep value | awk '{print $2}' >> $dir/waitTime
+  wsk activation list $func -l $limit -s $skip -f | grep '"end":' | awk '{print $2}' | tr -d "," >> $dir/throughput
+  wsk activation list $func -l $limit -s $skip -f | grep -A 1 '"waitTime"' | grep value | awk '{print $2}' >> $dir/waitTime
 done
 
 ### Throughput
