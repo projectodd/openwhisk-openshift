@@ -197,7 +197,7 @@ objects:
     - from:
         kind: DockerImage
         name: docker.io/strimzi/cluster-controller:${STRIMZI_VERSION}
-      name: ${STRIMZI_VERSION}
+      name: whisky
       referencePolicy:
         type: Local
 - apiVersion: "v1"
@@ -212,7 +212,7 @@ objects:
     - from:
         kind: DockerImage
         name: docker.io/projectodd/controller:${OPENWHISK_VERSION}
-      name: ${OPENWHISK_VERSION}
+      name: whisky
       referencePolicy:
         type: Local
 - apiVersion: "v1"
@@ -227,7 +227,7 @@ objects:
     - from:
         kind: DockerImage
         name: docker.io/projectodd/invoker:${OPENWHISK_VERSION}
-      name: ${OPENWHISK_VERSION}
+      name: whisky
       referencePolicy:
         type: Local
 - apiVersion: "v1"
@@ -242,7 +242,7 @@ objects:
     - from:
         kind: DockerImage
         name: docker.io/projectodd/action-nodejs-6:${PROJECTODD_VERSION}
-      name: ${PROJECTODD_VERSION}
+      name: whisky
       referencePolicy:
         type: Local
 - apiVersion: "v1"
@@ -257,7 +257,7 @@ objects:
     - from:
         kind: DockerImage
         name: docker.io/projectodd/action-nodejs-8:${PROJECTODD_VERSION}
-      name: ${PROJECTODD_VERSION}
+      name: whisky
       referencePolicy:
         type: Local
 - apiVersion: "v1"
@@ -272,7 +272,7 @@ objects:
     - from:
         kind: DockerImage
         name: docker.io/projectodd/action-java-8:${PROJECTODD_VERSION}
-      name: ${PROJECTODD_VERSION}
+      name: whisky
       referencePolicy:
         type: Local
 - apiVersion: "v1"
@@ -287,7 +287,7 @@ objects:
     - from:
         kind: DockerImage
         name: docker.io/projectodd/action-python-3:${PROJECTODD_VERSION}
-      name: ${PROJECTODD_VERSION}
+      name: whisky
       referencePolicy:
         type: Local
 - apiVersion: "v1"
@@ -302,7 +302,7 @@ objects:
     - from:
         kind: DockerImage
         name: docker.io/projectodd/action-python-2:${PROJECTODD_VERSION}
-      name: ${PROJECTODD_VERSION}
+      name: whisky
       referencePolicy:
         type: Local
 - apiVersion: "v1"
@@ -317,7 +317,22 @@ objects:
     - from:
         kind: DockerImage
         name: docker.io/projectodd/action-php-7:${PROJECTODD_VERSION}
-      name: ${PROJECTODD_VERSION}
+      name: whisky
+      referencePolicy:
+        type: Local
+- apiVersion: "v1"
+  kind: "ImageStream"
+  metadata:
+    name: "dockerskeleton"
+  spec:
+    dockerImageRepository: "docker.io/projectodd/dockerskeleton"
+    lookupPolicy:
+      local: true
+    tags:
+    - from:
+        kind: DockerImage
+        name: docker.io/projectodd/dockerskeleton:${PROJECTODD_VERSION}
+      name: whisky
       referencePolicy:
         type: Local
 - apiVersion: "v1"
@@ -332,7 +347,7 @@ objects:
     - from:
         kind: DockerImage
         name: docker.io/projectodd/whisk_couchdb:${PROJECTODD_VERSION}
-      name: ${PROJECTODD_VERSION}
+      name: whisky
       referencePolicy:
         type: Local
 - apiVersion: "v1"
@@ -347,7 +362,7 @@ objects:
     - from:
         kind: DockerImage
         name: docker.io/projectodd/whisk_alarms:${PROJECTODD_VERSION}
-      name: ${PROJECTODD_VERSION}
+      name: whisky
       referencePolicy:
         type: Local
 - apiVersion: "v1"
@@ -362,7 +377,7 @@ objects:
     - from:
         kind: DockerImage
         name: docker.io/openwhisk/alarmprovider:1.9.0
-      name: 1.9.0
+      name: whisky
       referencePolicy:
         type: Local
 - apiVersion: "v1"
@@ -377,7 +392,7 @@ objects:
     - from:
         kind: DockerImage
         name: docker.io/projectodd/whisk_catalog:${PROJECTODD_VERSION}
-      name: ${PROJECTODD_VERSION}
+      name: whisky
       referencePolicy:
         type: Local
 - apiVersion: "v1"
@@ -529,7 +544,7 @@ objects:
           },
           "blackboxes": [
               {
-                  "name": "projectodd/dockerskeleton"
+                  "name": "dockerskeleton"
               }
           ]
       }
@@ -597,7 +612,7 @@ objects:
         containers:
         - name: controller
           imagePullPolicy: IfNotPresent
-          image: controller:${OPENWHISK_VERSION}
+          image: controller:whisky
           command: ["/bin/bash", "-c", "COMPONENT_NAME=$(hostname | cut -d'-' -f2) CONFIG_akka_remote_netty_tcp_hostname=$(hostname).controller /init.sh `hostname | cut -d'-' -f2`"]
           ports:
           - name: controller
@@ -786,7 +801,7 @@ objects:
       spec:
         containers:
         - name: catalog
-          image: catalog:${PROJECTODD_VERSION}
+          image: catalog:whisky
           env:
             - name: "WHISK_AUTH"
               valueFrom:
@@ -866,7 +881,7 @@ objects:
         containers:
         - name: couchdb
           imagePullPolicy: IfNotPresent
-          image: couchdb:${PROJECTODD_VERSION}
+          image: couchdb:whisky
           command: ["/init.sh"]
           ports:
           - name: couchdb
@@ -940,7 +955,7 @@ objects:
     name: invoker.config
   data:
     docker_image_prefix: ""
-    docker_image_tag: ${PROJECTODD_VERSION}
+    docker_image_tag: whisky
     docker_registry: ""
     invoker_container_dns: ""
     invoker_container_network: bridge
@@ -1007,7 +1022,7 @@ objects:
         containers:
         - name: invoker
           imagePullPolicy: IfNotPresent
-          image: invoker:${OPENWHISK_VERSION}
+          image: invoker:whisky
           command: [ "/bin/bash", "-o", "allexport", "/invoker_config/init" ]
           ports:
           - name: invoker
@@ -1181,28 +1196,28 @@ objects:
         restartPolicy: Never
         initContainers:
         - name: preload-openwhisk-nodejs6
-          image: action-nodejs-6:${PROJECTODD_VERSION}
+          image: action-nodejs-6:whisky
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         - name: preload-openwhisk-java8
-          image: action-java-8:${PROJECTODD_VERSION}
+          image: action-java-8:whisky
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         - name: preload-openwhisk-python3
-          image: action-python-3:${PROJECTODD_VERSION}
+          image: action-python-3:whisky
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         - name: preload-openwhisk-python2
-          image: action-python-2:${PROJECTODD_VERSION}
+          image: action-python-2:whisky
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         - name: preload-openwhisk-php7
-          image: action-php-7:${PROJECTODD_VERSION}
+          image: action-php-7:whisky
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         containers:
         - name: preload-openwhisk-nodejs8
-          image: action-nodejs-8:${PROJECTODD_VERSION}
+          image: action-nodejs-8:whisky
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
 - apiVersion: v1
@@ -1419,7 +1434,7 @@ objects:
         serviceAccountName: openwhisk
         containers:
         - name: strimzi-cluster-controller
-          image: cluster-controller:${STRIMZI_VERSION}
+          image: cluster-controller:whisky
           env:
           - name: STRIMZI_CONFIGMAP_LABELS
             value: "strimzi.io/kind=cluster"
@@ -1485,7 +1500,7 @@ objects:
         containers:
         - name: alarmprovider
           imagePullPolicy: IfNotPresent
-          image: alarmprovider:1.9.0
+          image: alarmprovider:whisky
           command: [ "/bin/bash", "-c", "source /alarmprovider_config/env; node /alarmsTrigger/app.js" ]
           envFrom:
           - configMapRef:
@@ -1517,7 +1532,7 @@ objects:
           command: ['sh', '-cu', 'echo "$COUCHDB_SERVICE_HOST"']
         - name: install-alarms-catalog
           imagePullPolicy: IfNotPresent
-          image: alarms:${PROJECTODD_VERSION}
+          image: alarms:whisky
           envFrom:
           - configMapRef:
               name: alarmprovider
@@ -1559,7 +1574,7 @@ objects:
             restartPolicy: Never
             containers:
             - name: refresh-activations
-              image: alarms:${PROJECTODD_VERSION}
+              image: alarms:whisky
               command: ["/bin/bash", "-c", "/openwhisk/bin/wsk --auth $AUTH_GUEST --apihost http://controller:8080 -i activation list"]
               env:
               - name: "AUTH_GUEST"
@@ -1593,7 +1608,7 @@ objects:
             restartPolicy: Never
             containers:
             - name: refresh-activations
-              image: couchdb:${PROJECTODD_VERSION}
+              image: couchdb:whisky
               command: ["/bin/bash", "-c", "set -x; /openwhisk/tools/db/deleteLogsFromActivations.py --dbUrl http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB --dbName $DB_ACTIVATIONS --days $DB_DAYS_TO_KEEP_LOGS; /openwhisk/tools/db/cleanUpActivations.py --dbUrl http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB --dbName $DB_ACTIVATIONS --days $DB_DAYS_TO_KEEP_ACTIVATIONS"]
               env:
               - name: "DB_USERNAME"
