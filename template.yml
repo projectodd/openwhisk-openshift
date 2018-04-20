@@ -44,6 +44,10 @@ parameters:
   description: Value that controllers when the Controller(s) considers the Invoker(s) to be full. This should be less than or equal to INVOKER_MAX_CONTAINERS. Making them equal will give the highest function density but setting it a bit less than INVOKER_MAX_CONTAINERS can improve overall system throughput and reduce Invoker function container thrashing.
   value: "8"
   required: true
+- name: CONTROLLER_INVOKER_BLACKBOXFRACTION
+  description: What percent of Invokers should be used for blackbox (user-provider container image) actions. At least one Invoker will be dedicated for blackbox actions as long as 2 or more Invokers are deployed no matter what percentage is set here.
+  value: "10%"
+  required: true
 - name: AKKA_CLUSTER_SEED_NODES
   description: Hostnames of akka seed nodes
   value: "controller-0.controller:2551"
@@ -79,6 +83,14 @@ parameters:
 - name: INVOKER_CONTAINER_PAUSE_TIMEOUT
   description: Maximum time an idle function container should stick around before the Invoker marks it as paused. Example values - "5 seconds", "500 milliseconds", etc.
   value: "5 seconds"
+  required: true
+- name: INVOKER_CONTAINER_CONCURRENT_STARTS
+  description: Maximum number of action containers each Invoker will attempt to start at once. Raise or lower this number depending on your throughput requirements, cold start rate, number of Invokers you deploy, and how quickly your cluster can spin up new pods.
+  value: "10"
+  required: true
+- name: INVOKER_LOGSTORE_PROVIDER
+  description: Apache OpenWhisk LogStoreProvider implementation. Setting this to whisk.core.containerpool.logging.LogDriverLogStoreProvider will increase throughput but users will have to find logs another way, like via Kibana.
+  value: "whisk.core.containerpool.logging.DockerToActivationLogStoreProvider"
   required: true
 - name: COUCHDB_INSTANCES
   description: The desired number of CouchDB nodes
@@ -155,9 +167,21 @@ parameters:
   description: Number of days to keep activation records before pruning them from the database
   value: "30"
   required: true
+- name: WHISK_ACTIONS_MEMORY_MAX
+  description: Maximum memory an action is allowed to request.
+  value: "1024 m"
+  required: true
+- name: WHISK_ACTIONS_MEMORY_MIN
+  description: Minimum memory an action is allowed to request.
+  value: "128 m"
+  required: true
+- name: WHISK_ACTIONS_MEMORY_STD
+  description: Default memory an action requests if unspecified.
+  value: "256 m"
+  required: true
 - name: OPENWHISK_VERSION
   description: The DockerHub tag for openwhisk/{controller,invoker}
-  value: "rhdemo-88e46e8"
+  value: "rhdemo-6ee19949"
   required: true
 - name: PROJECTODD_VERSION
   description: The DockerHub tag for projectodd images
@@ -628,6 +652,8 @@ objects:
             value: "2551"
           - name: "CONFIG_whisk_loadbalancer_invokerBusyThreshold"
             value: "${CONTROLLER_INVOKER_BUSYTHRESHOLD}"
+          - name: "CONFIG_whisk_loadbalancer_blackboxFraction"
+            value: "${CONTROLLER_INVOKER_BLACKBOXFRACTION}"
   
           # extra JVM arguments
           - name: "JAVA_OPTS"
@@ -1049,6 +1075,14 @@ objects:
               value: "${INVOKER_CONTAINER_TIMEOUT}"
             - name: "CONFIG_whisk_containerProxy_timeouts_pauseGrace"
               value: "${INVOKER_CONTAINER_PAUSE_TIMEOUT}"
+            - name: "CONFIG_whisk_kubernetes_concurrentStarts"
+              value: "${INVOKER_CONTAINER_CONCURRENT_STARTS}"
+            - name: "CONFIG_whisk_memory_max"
+              value: "${WHISK_ACTIONS_MEMORY_MAX}"
+            - name: "CONFIG_whisk_memory_min"
+              value: "${WHISK_ACTIONS_MEMORY_MIN}"
+            - name: "CONFIG_whisk_memory_std"
+              value: "${WHISK_ACTIONS_MEMORY_STD}"
             - name: "DOCKER_IMAGE_PREFIX"
               valueFrom:
                 configMapKeyRef:
@@ -1153,11 +1187,8 @@ objects:
               value: "10 minutes"
             - name: "CONFIG_whisk_kubernetes_timeouts_logs"
               value: "10 minutes"
-
-            # Uncomment the below to stop fetching action logs and
-            # greatly increase throughput if you don't need them
-            # - name: "CONFIG_whisk_spi_LogStoreProvider"
-            #   value: "whisk.core.containerpool.logging.LogDriverLogStoreProvider"
+            - name: "CONFIG_whisk_spi_LogStoreProvider"
+              value: "${INVOKER_LOGSTORE_PROVIDER}"
 - apiVersion: batch/v1
   kind: Job
   metadata:
