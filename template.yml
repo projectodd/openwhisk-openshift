@@ -654,6 +654,12 @@ objects:
             value: "${CONTROLLER_INVOKER_BUSYTHRESHOLD}"
           - name: "CONFIG_whisk_loadbalancer_blackboxFraction"
             value: "${CONTROLLER_INVOKER_BLACKBOXFRACTION}"
+          - name: "CONFIG_whisk_memory_max"
+            value: "${WHISK_ACTIONS_MEMORY_MAX}"
+          - name: "CONFIG_whisk_memory_min"
+            value: "${WHISK_ACTIONS_MEMORY_MIN}"
+          - name: "CONFIG_whisk_memory_std"
+            value: "${WHISK_ACTIONS_MEMORY_STD}"
   
           # extra JVM arguments
           - name: "JAVA_OPTS"
