@@ -89,7 +89,19 @@ fix a networking bug in current releases:
 
     minishift start --memory 8GB
     minishift ssh -- sudo ip link set docker0 promisc on
-    
+
+If your minishift is running OpenShift 3.9.0, you'll need to fix
+another bug:
+
+    minishift openshift config set --patch \
+        '{"admissionConfig":
+            {"pluginConfig":
+                {"openshift.io/ImagePolicy":
+                    {"configuration":
+                        {"apiVersion": "v1",
+                         "kind": "ImagePolicyConfig",
+                         "resolveImages": "AttemptRewrite"}}}}}'
+
 Put your `oc` command in your PATH:
 
     eval $(minishift oc-env)
@@ -208,44 +220,40 @@ in queues inside OpenWhisk before being invoked.
 
 ## Common Problems
 
-### Catalog of actions empty
+### Empty catalog (nothing from `wsk list`)
 
-You can inspect the catalog of actions by calling `wsk action list`.
-It might happen that after installing OpenWhisk there is only a single action:
+The following command should show a number of system packages:
 
-    $ wsk action list
-    actions
-    /whisk.system/invokerHealthTestAction0                                 private
+    wsk -i package list /whisk.system
 
-If that happens, chances are that the default action catalog was not installed properly.
-This could be due to the installation process being slow, e.g.
+If it doesn't, the `install-catalog` job probably failed. The first
+time you install OpenWhisk may take a very long time, due to the
+number of Docker images being pulled. This may cause the
+`install-catalog` job to give up, leaving you without the default
+system packages installed.
 
-    $ oc get job
-    NAME                         DESIRED   SUCCESSFUL   AGE
-    install-catalog              1         0            1d
-    preload-openwhisk-runtimes   1         1            1d
+To remedy this, simply delete and recreate the job:
 
-To get back the catalog, delete and execute the job again.
-This can be done by extracting the `install-catalog` definition into a separate file and executing it again:
+    oc delete job install-catalog
+    oc process -f template.yml | oc create -f -
 
-    $ oc delete job install-catalog
-    job "install-catalog" deleted
-    $ oc create -f install-catalog.yml
-    job "install-catalog" created
-    $ oc get pods
-    NAME                               READY     STATUS      RESTARTS   AGE
-    ...
-    install-catalog-gj7r6              0/1       Completed   0          30s
+You'll see harmless `AlreadyExists` errors for all but the
+`install-catalog` job. Once its associated pod runs to completion, you
+should see output like the following:
 
-Finally, retrieve the action list again:
-
-    $ wsk action list
-    actions
-    /whisk.system/samples/greeting                                         private nodejs:6
-    /whisk.system/watson-speechToText/speechToText                         private nodejs:6
-    /whisk.system/weather/forecast                                         private nodejs:6
-    /whisk.system/watson-textToSpeech/textToSpeech                         private nodejs:6
-    ...
+    $ wsk -i package list /whisk.system
+	packages
+	/whisk.system/combinators                                              shared
+	/whisk.system/websocket                                                shared
+	/whisk.system/github                                                   shared
+	/whisk.system/utils                                                    shared
+	/whisk.system/slack                                                    shared
+	/whisk.system/samples                                                  shared
+	/whisk.system/watson-translator                                        shared
+	/whisk.system/watson-textToSpeech                                      shared
+	/whisk.system/watson-speechToText                                      shared
+	/whisk.system/weather                                                  shared
+	/whisk.system/alarms                                                   shared
 
 ### `The requested resource does not exist` when creating an action
 
@@ -278,3 +286,26 @@ Now try adding the action again:
 
     $ wsk -i action create md5hasher target/maven-java.jar --main org.apache.openwhisk.example.maven.App
     ok: created action md5hasher
+
+### Failing to pull ImageStream tags
+
+You may see errors relating to pulling images on OpenShift 3.9:
+
+    $ oc describe pod couchdb-0
+    ...
+	Warning  Failed                 6m (x4 over 10m)    kubelet, localhost  Failed to pull image "couchdb:whisky": rpc error: code = Unknown desc = Tag whisky not found in repository docker.io/library/couchdb
+	Warning  Failed                 6m (x4 over 10m)    kubelet, localhost  Error: ErrImagePull
+	Warning  Failed                 21s (x31 over 10m)  kubelet, localhost  Error: ImagePullBackOff
+
+If so, run the following configuration patch:
+
+    minishift openshift config set --patch \
+        '{"admissionConfig":
+            {"pluginConfig":
+                {"openshift.io/ImagePolicy":
+                    {"configuration":
+                        {"apiVersion": "v1",
+                         "kind": "ImagePolicyConfig",
+                         "resolveImages": "AttemptRewrite"}}}}}'
+
+You may then need to recreate your project and deploy the template again.
