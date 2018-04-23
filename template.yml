@@ -416,7 +416,22 @@ objects:
     - from:
         kind: DockerImage
         name: docker.io/busybox
-      name: latest
+      name: whisky
+      referencePolicy:
+        type: Local
+- apiVersion: "v1"
+  kind: "ImageStream"
+  metadata:
+    name: "nginx"
+  spec:
+    dockerImageRepository: "centos/nginx-112-centos7"
+    lookupPolicy:
+      local: true
+    tags:
+    - from:
+        kind: DockerImage
+        name: "centos/nginx-112-centos7@sha256:42330f7f29ba1ad67819f4ff3ae2472f62de13a827a74736a5098728462212e7"
+      name: whisky
       referencePolicy:
         type: Local
 
@@ -795,10 +810,10 @@ objects:
             failureThreshold: 5
         initContainers:
         - name: wait-for-services
-          image: busybox
+          image: busybox:whisky
           command: ['sh', '-cu', 'until nslookup couchdb && nslookup strimzi-openwhisk-kafka; do echo waiting for services; sleep 1; done']
         - name: wait-for-couchdb
-          image: busybox
+          image: busybox:whisky
           command: ['sh', '-c', 'until wget -T 5 --spider http://${COUCHDB_SERVICE_HOST}:${COUCHDB_SERVICE_PORT}/${DB_WHISK_ACTIVATIONS}; do echo waiting for couchdb; sleep 2; done;']
           env:
           - name: "DB_WHISK_ACTIVATIONS"
@@ -829,7 +844,7 @@ objects:
               value: "http://controller:8080"
         initContainers:
         - name: wait-for-controller
-          image: busybox
+          image: busybox:whisky
           command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
         restartPolicy: Never
 - apiVersion: v1
@@ -1024,10 +1039,10 @@ objects:
   
         initContainers:
         - name: wait-for-services
-          image: busybox
+          image: busybox:whisky
           command: ['sh', '-cu', 'until nslookup couchdb && nslookup strimzi-openwhisk-zookeeper && nslookup strimzi-openwhisk-kafka; do echo waiting for services; sleep 1; done']
         - name: wait-for-controller
-          image: busybox
+          image: busybox:whisky
           command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
   
         containers:
@@ -1348,27 +1363,27 @@ objects:
   
               # redirect requests for specific binaries to the matching one from the latest openwhisk-cli release.
               location /cli/go/download/linux/amd64 {
-                  return 301 https://github.com/apache/incubator-openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-linux-amd64.tgz;
+                  return 301 https://github.com/projectodd/openwhisk-openshift/releases/download/latest/OpenWhisk_CLI-latest-linux-amd64.tgz;
               }
               location /cli/go/download/linux/386 {
-                  return 301 https://github.com/apache/incubator-openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-linux-386.tgz;
+                  return 301 https://github.com/projectodd/openwhisk-openshift/releases/download/latest/OpenWhisk_CLI-latest-linux-386.tgz;
               }
               location /cli/go/download/mac/amd64 {
-                  return 301 https://github.com/apache/incubator-openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-mac-amd64.zip;
+                  return 301 https://github.com/projectodd/openwhisk-openshift/releases/download/latest/OpenWhisk_CLI-latest-mac-amd64.zip;
               }
               location /cli/go/download/mac/386 {
-                  return 301 https://github.com/apache/incubator-openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-mac-386.zip;
+                  return 301 https://github.com/projectodd/openwhisk-openshift/releases/download/latest/OpenWhisk_CLI-latest-mac-386.zip;
               }
               location /cli/go/download/windows/amd64 {
-                  return 301 https://github.com/apache/incubator-openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-windows-amd64.zip;
+                  return 301 https://github.com/projectodd/openwhisk-openshift/releases/download/latest/OpenWhisk_CLI-latest-windows-amd64.zip;
               }
               location /cli/go/download/windows/386 {
-                  return 301 https://github.com/apache/incubator-openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-windows-386.zip;
+                  return 301 https://github.com/projectodd/openwhisk-openshift/releases/download/latest/OpenWhisk_CLI-latest-windows-386.zip;
               }
   
               # redirect top-level cli downloads to the latest openwhisk-cli release.
               location /cli/go/download {
-                  return 301 https://github.com/apache/incubator-openwhisk-cli/releases/latest;
+                  return 301 https://github.com/projectodd/openwhisk-openshift/releases/latest;
                }
           }
       }
@@ -1398,7 +1413,7 @@ objects:
         - name: nginx
           imagePullPolicy: IfNotPresent
           # Image from Mar 22nd
-          image: centos/nginx-112-centos7@sha256:42330f7f29ba1ad67819f4ff3ae2472f62de13a827a74736a5098728462212e7
+          image: nginx:whisky
           command: [ "/bin/bash", "-o", "allexport", "/nginx_config/init" ]
           env:
           - name: KUBERNETES_NAMESPACE
@@ -1417,7 +1432,7 @@ objects:
             mountPath: "/logs"
         initContainers:
         - name: wait-for-controller
-          image: busybox
+          image: busybox:whisky
           command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
 - apiVersion: v1
   kind: Secret
@@ -1544,7 +1559,7 @@ objects:
             mountPath: "/alarmprovider_config"
         initContainers:
         - name: wait-for-couchdb
-          image: busybox
+          image: busybox:whisky
           command: ['sh', '-cu', 'echo "$COUCHDB_SERVICE_HOST"']
         - name: install-alarms-catalog
           imagePullPolicy: IfNotPresent
@@ -1600,7 +1615,7 @@ objects:
                     key: guest
             initContainers:
             - name: wait-for-controller
-              image: busybox
+              image: busybox:whisky
               command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
               restartPolicy: Never
 - apiVersion: batch/v2alpha1
@@ -1654,7 +1669,7 @@ objects:
                     key: db_days_to_keep_activations
             initContainers:
             - name: wait-for-couchdb
-              image: busybox
+              image: busybox:whisky
               command: ['sh', '-c', 'until wget -T 5 --spider http://${COUCHDB_SERVICE_HOST}:${COUCHDB_SERVICE_PORT}/${DB_WHISK_ACTIVATIONS}; do echo waiting for couchdb; sleep 2; done;']
               env:
               - name: "DB_WHISK_ACTIVATIONS"

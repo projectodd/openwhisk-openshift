@@ -19,7 +19,7 @@ RUN git clone https://github.com/apache/incubator-openwhisk-package-alarms /open
 
 # Install wsk binary
 RUN mkdir -p /openwhisk/bin
-RUN curl -L https://github.com/apache/incubator-openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-linux-amd64.tgz | tar xz && mv wsk /openwhisk/bin/wsk
+RUN curl -L https://github.com/projectodd/openwhisk-openshift/releases/download/latest/OpenWhisk_CLI-latest-linux-amd64.tgz | tar xz && mv wsk /openwhisk/bin/wsk
 
 # Ensure we can write to needed directories on OpenShift
 RUN chgrp -R 0 /openwhisk-package-alarms \

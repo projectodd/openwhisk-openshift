@@ -10,7 +10,7 @@ USER root
 RUN \
   # Install CLI
   mkdir -p $OPENWHISK_HOME/bin \
-  && curl -L https://github.com/apache/incubator-openwhisk-cli/releases/download/latest/OpenWhisk_CLI-latest-linux-amd64.tgz | tar -xzf - -C $OPENWHISK_HOME/bin \
+  && curl -L https://github.com/projectodd/openwhisk-openshift/releases/download/latest/OpenWhisk_CLI-latest-linux-amd64.tgz | tar -xzf - -C $OPENWHISK_HOME/bin \
   # Install catalog packages
   && mkdir -p $OPENWHISK_HOME/catalog \
   && curl -L https://github.com/apache/incubator-openwhisk-catalog/archive/$OPENWHISK_CATALOG_SHA.tar.gz | tar --strip-components=2 -C $OPENWHISK_HOME/catalog -xzf - incubator-openwhisk-catalog-$OPENWHISK_CATALOG_SHA/packages/ \

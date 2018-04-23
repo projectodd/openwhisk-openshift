@@ -59,7 +59,9 @@ avoid the validation error triggered by the self-signed cert in the
     wsk -i list
     wsk -i action invoke /whisk.system/utils/echo -p message hello -b
 
-If either fails, ensure you have the latest `wsk` installed.
+If either fails, ensure you have the latest
+[wsk](https://github.com/projectodd/openwhisk-openshift/releases/latest)
+installed.
 
 ### Alarms
 
