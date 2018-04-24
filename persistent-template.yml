@@ -200,7 +200,7 @@ parameters:
   required: true
 - name: PROJECTODD_VERSION
   description: The DockerHub tag for projectodd images
-  value: "f5eae82"
+  value: "432b795"
   required: true
 - name: STRIMZI_VERSION
   description: The DockerHub tag for strimzi images
