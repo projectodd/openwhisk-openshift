@@ -27,6 +27,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 
   INI_FILE=/opt/couchdb/etc/local.d/openshift.ini
   printf "[query_server_config]\n%s = %s\n" "reduce_limit" "false" > $INI_FILE
+  printf "[compactions]\n%s = %s\n" "_default" "[{db_fragmentation, \"35%\"}, {view_fragmentation, \"40%\"}]" >> $INI_FILE
 
 	if [ "$COUCHDB_USER" ] && [ "$COUCHDB_PASSWORD" ]; then
     # Admin user

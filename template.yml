@@ -1638,9 +1638,9 @@ objects:
           spec:
             restartPolicy: Never
             containers:
-            - name: refresh-activations
+            - name: prune-activations
               image: couchdb:whisky
-              command: ["/bin/bash", "-c", "set -x; /openwhisk/tools/db/deleteLogsFromActivations.py --dbUrl http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB --dbName $DB_ACTIVATIONS --days $DB_DAYS_TO_KEEP_LOGS; /openwhisk/tools/db/cleanUpActivations.py --dbUrl http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB --dbName $DB_ACTIVATIONS --days $DB_DAYS_TO_KEEP_ACTIVATIONS"]
+              command: ["/bin/bash", "-c", "set -x; curl -H \"Content-Type: application/json\" -X PUT -d \"100\" \"http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB/$DB_ACTIONS/_revs_limit\"; curl -H \"Content-Type: application/json\" -X PUT -d \"5\" \"http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB/$DB_ACTIVATIONS/_revs_limit\"; /openwhisk/tools/db/deleteLogsFromActivations.py --dbUrl http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB --dbName $DB_ACTIVATIONS --days $DB_DAYS_TO_KEEP_LOGS; /openwhisk/tools/db/cleanUpActivations.py --dbUrl http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB --dbName $DB_ACTIVATIONS --days $DB_DAYS_TO_KEEP_ACTIVATIONS"]
               env:
               - name: "DB_USERNAME"
                 valueFrom:
@@ -1657,6 +1657,11 @@ objects:
                   configMapKeyRef:
                     name: db.config
                     key: db_whisk_activations
+              - name: "DB_ACTIONS"
+                valueFrom:
+                  configMapKeyRef:
+                    name: db.config
+                    key: db_whisk_actions
               - name: "DB_DAYS_TO_KEEP_LOGS"
                 valueFrom:
                   configMapKeyRef:
