@@ -80,14 +80,14 @@ kafka_count=$(num_replicas "statefulset/strimzi-openwhisk-kafka")
 for ((i=0; i < $kafka_count; i++)); do
   pod="strimzi-openwhisk-kafka-${i}"
   check_pod_status $pod
-  check_pv_usage $pod "/var/lib/kafka" 40
+  check_pv_usage $pod "/var/lib/kafka" 65
 done
 
 zookeeper_count=$(num_replicas "statefulset/strimzi-openwhisk-zookeeper")
 for ((i=0; i < $zookeeper_count; i++)); do
   pod="strimzi-openwhisk-zookeeper-${i}"
   check_pod_status $pod
-  check_pv_usage $pod "/var/lib/zookeeper" 25
+  check_pv_usage $pod "/var/lib/zookeeper" 65
 done
 
 couchdb_count=$(num_replicas "statefulset/couchdb")
