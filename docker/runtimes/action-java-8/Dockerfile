@@ -17,9 +17,11 @@ RUN curl -L -o java.tar.gz https://github.com/apache/incubator-openwhisk-runtime
 
 USER root
 
+RUN java -Xshare:dump
+
 RUN chgrp -R 0 /opt/jboss \
   && chmod -R g+rwX /opt/jboss
 
 USER 1000
 
-CMD ["java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-jar", "/opt/jboss/javaAction-all.jar"]
+CMD ["java", "-Xshare:on", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-jar", "/opt/jboss/javaAction-all.jar"]
