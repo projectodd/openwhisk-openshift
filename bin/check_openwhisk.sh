@@ -53,9 +53,11 @@ check_pv_usage() {
   mount=$2
   max_percent=$3
   percent_used=$(oc rsh $pod df -h | grep $mount | awk '{print $5}' | tr -d '%')
-  info "$pod PV Usage: ${percent_used}%"
-  if [ $percent_used -gt $max_percent ]; then
-    error "Pod $pod is running out of persistent volume space! ${percent_used}% is used."
+  if [ -n "${percent_used}" ]; then
+    info "$pod PV Usage: ${percent_used}%"
+    if [ $percent_used -gt $max_percent ]; then
+      error "Pod $pod is running out of persistent volume space! ${percent_used}% is used."
+    fi
   fi
 }
 
