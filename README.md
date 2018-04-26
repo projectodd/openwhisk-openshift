@@ -46,7 +46,7 @@ You should see a message like `invoker status changed to 0 -> Healthy`
 
 Once your cluster is ready, you need to configure your `wsk` binary.
 If necessary,
-[download it](releases/tag/latest),
+[download it](https://github.com/projectodd/openwhisk-openshift/releases/tag/latest),
 unpack it, ensure it's in your PATH, and:
 
     AUTH_SECRET=$(oc get secret whisk.auth -o yaml | grep "system:" | awk '{print $2}' | base64 --decode)
