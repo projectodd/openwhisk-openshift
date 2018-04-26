@@ -45,9 +45,9 @@ You should see a message like `invoker status changed to 0 -> Healthy`
 ## Using `wsk`
 
 Once your cluster is ready, you need to configure your `wsk` binary.
-If necessary, download a recent one from
-https://github.com/apache/incubator-openwhisk-cli/releases/, ensure
-it's in your PATH, and:
+If necessary,
+[download it](releases/tag/latest),
+unpack it, ensure it's in your PATH, and:
 
     AUTH_SECRET=$(oc get secret whisk.auth -o yaml | grep "system:" | awk '{print $2}' | base64 --decode)
     wsk property set --auth $AUTH_SECRET --apihost $(oc get route/openwhisk --template="{{.spec.host}}")
