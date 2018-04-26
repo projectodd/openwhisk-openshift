@@ -133,16 +133,16 @@ parameters:
   displayName: Number of Zookeper cluster nodes (odd number of nodes is recomended)
   required: true
   value: "1"
-- name: KAFKA_NODE_COUNT
-  description: Number of Kafka cluster nodes which will be deployed
-  displayName: Number of Kafka cluster nodes
-  required: true
-  value: "1"
 - name: ZOOKEEPER_VOLUME_CAPACITY
   description: Volume space available for Zookeeper data, e.g. 512Mi, 2Gi.
   displayName: Zookeeper Volume Capacity
   required: true
   value: 1Gi
+- name: KAFKA_NODE_COUNT
+  description: Number of Kafka cluster nodes which will be deployed
+  displayName: Number of Kafka cluster nodes
+  required: true
+  value: "1"
 - name: KAFKA_VOLUME_CAPACITY
   description: Volume space available for Kafka data, e.g. 512Mi, 2Gi.
   displayName: Kafka Volume Capacity
@@ -193,6 +193,18 @@ parameters:
 - name: WHISK_ACTIONS_MEMORY_STD
   description: Default memory an action requests if unspecified.
   value: "256 m"
+  required: true
+- name: WHISK_KAFKA_REPLICATION_FACTOR
+  description: Replication factor for all OpenWhisk topics
+  value: "1"
+  required: true
+- name: WHISK_KAFKA_TOPICS_COMPLETED_RETENTION_BYTES
+  description: Maximum bytes to retain for the completed activations topic for each Controller. Each kafka node will consume this many bytes times the number of Controllers just for the completed topics. So, if this is set to 1GB and you have 3 Controllers then expect up to 3GB of disk space used by the Controller topics.
+  value: "268435456"
+  required: true
+- name: WHISK_KAFKA_TOPICS_INVOKER_RETENTION_BYTES
+  description: Maximum bytes to retain for each Invoker topic. Each Kafka node will consume this many bytes times the number of Invokers just for the Invoker topics. So, if this is set to 1GB and you have 10 Invokers then expect up to 10GB of disk space used by the Invoker topics.
+  value: "268435456"
   required: true
 - name: OPENWHISK_VERSION
   description: The DockerHub tag for openwhisk/{controller,invoker}
@@ -690,6 +702,10 @@ objects:
             value: "${WHISK_ACTIONS_MEMORY_MIN}"
           - name: "CONFIG_whisk_memory_std"
             value: "${WHISK_ACTIONS_MEMORY_STD}"
+          - name: "CONFIG_whisk_kafka_replicationFactor"
+            value: "${WHISK_KAFKA_REPLICATION_FACTOR}"
+          - name: "CONFIG_whisk_kafka_topics_completed_retentionBytes"
+            value: "${WHISK_KAFKA_TOPICS_COMPLETED_RETENTION_BYTES}"
   
           # extra JVM arguments
           - name: "JAVA_OPTS"
@@ -1125,6 +1141,10 @@ objects:
               value: "${WHISK_ACTIONS_MEMORY_MIN}"
             - name: "CONFIG_whisk_memory_std"
               value: "${WHISK_ACTIONS_MEMORY_STD}"
+            - name: "CONFIG_whisk_kafka_replicationFactor"
+              value: "${WHISK_KAFKA_REPLICATION_FACTOR}"
+            - name: "CONFIG_whisk_kafka_topics_invoker_retentionBytes"
+              value: "${WHISK_KAFKA_TOPICS_INVOKER_RETENTION_BYTES}"
             - name: "DOCKER_IMAGE_PREFIX"
               valueFrom:
                 configMapKeyRef:
