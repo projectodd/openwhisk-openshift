@@ -25,17 +25,17 @@ done
 
 info() {
   if [ "$quiet" == "false" ]; then
-    echo "[INFO]: $@"
+    echo -e "[INFO]: $@"
   fi
 }
 
 warn() {
-  echo "[WARNING]: $@"
+  echo -e "[WARNING]: $@"
   warnings="true"
 }
 
 error() {
-  echo "[ERROR]: $@"
+  echo -e "[ERROR]: $@"
   errors="true"
 }
 
@@ -111,6 +111,12 @@ for ((i=0; i < $invoker_count; i++)); do
   pod="invoker-${i}"
   check_pod_status $pod
 done
+
+output=$(wsk action invoke /whisk.system/utils/echo -p payload check_openwhisk -b)
+
+if [[ $output != *"\"status\": \"success\""* ]]; then
+  error "Unable to invoke echo action. Action output: \n$output"
+fi
 
 if [ $errors != "false" ] || [ $warnings != "false" ]; then
   exit 1
