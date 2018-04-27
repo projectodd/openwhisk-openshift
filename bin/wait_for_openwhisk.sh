@@ -16,7 +16,7 @@ couchdbHealthCheck () {
   PASSED=false
   TIMEOUT=0
   until [ $TIMEOUT -eq 60 ]; do
-    POD_NAME=$(oc get pods -o wide --show-all | grep "couchdb-0" | awk '{print $1}')
+      POD_NAME=$(oc get pods -o wide --show-all | grep "couchdb" | awk '{print $1}' | tail -1)
     if [ -n "$(oc logs $POD_NAME | grep "successfully setup and configured CouchDB")" ]; then
       PASSED=true
       break
@@ -163,8 +163,7 @@ invokerHealthCheck () {
 # Main body of script -- deploy OpenWhisk
 #################
 
-#couchdbHealthCheck
-statefulsetHealthCheck "couchdb"
+couchdbHealthCheck
 statefulsetHealthCheck "zookeeper"
 statefulsetHealthCheck "kafka"
 statefulsetHealthCheck "controller"
