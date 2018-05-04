@@ -116,8 +116,12 @@ output=$(wsk action invoke /whisk.system/utils/echo -p payload check_openwhisk -
 
 if [[ $output != *"\"status\": \"success\""* ]]; then
   error "Unable to invoke echo action. Action output: \n$output"
+else
+  info "Successfully invoked /whisk.system/utils.echo"
 fi
 
 if [ $errors != "false" ] || [ $warnings != "false" ]; then
   exit 1
 fi
+
+echo "All tests passed"
