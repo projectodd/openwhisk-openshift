@@ -201,7 +201,7 @@ parameters:
   required: true
 - name: STRIMZI_VERSION
   description: The DockerHub tag for strimzi images
-  value: "0.2.0"
+  value: "0.3.1"
   required: true
 
 objects:
