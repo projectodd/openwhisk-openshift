@@ -1,5 +1,9 @@
 sudo: required
 
+addons:
+  apt:
+    update: true
+
 env:
   global:
   - OPENSHIFT_VERSION=3.6.1
