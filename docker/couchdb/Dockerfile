@@ -11,6 +11,7 @@ ARG OPENWHISK_REPO_HASH=fbc0091
 USER root
 
 RUN yum -y --setopt=tsflags=nodocs install epel-release \
+  && yum -y --setopt=tsflags=nodocs install http://vault.centos.org/centos/7.1.1503/cr/x86_64/Packages/js-1.8.5-19.el7.x86_64.rpm \
   && yum -y --setopt=tsflags=nodocs install couchdb python2-pip gcc python-devel uid_wrapper openssl \
   && pip install -U ansible==2.3.0.0 couchdb argcomplete cffi markupsafe pyopenssl \
   && yum -y remove gcc python-devel \
