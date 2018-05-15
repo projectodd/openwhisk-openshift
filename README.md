@@ -29,18 +29,11 @@ using the latest ephemeral template in this repo:
 
 The shortened URL redirects to https://raw.githubusercontent.com/projectodd/openwhisk-openshift/master/template.yml
 
-This will take a few minutes. Verify that all pods eventually enter
-the `Running` or `Completed` state. For convenience, use the
-[watch](https://en.wikipedia.org/wiki/Watch_(Unix)) command.
-
-    watch oc get all
-
-The system is ready when the controller recognizes the invoker as
-healthy:
-
-    oc logs -f controller-0 | grep "invoker status changed"
-
-You should see a message like `invoker status changed to 0 -> Healthy`
+This will take a few minutes. Eventually, all pods should enter the
+`Running` or `Completed` state, and the controller pod[s] should
+recognize the invoker pod[s] as ready. If you have `wsk` installed,
+run [bin/wait_for_openwhisk.sh](bin/wait_for_openwhisk.sh). When it
+completes successfully, your cluster is ready.
 
 ## Using `wsk`
 

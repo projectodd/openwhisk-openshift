@@ -6,12 +6,6 @@ set -x
 # Helper functions for verifying pod creation
 #################
 
-deleteTerminatingPods () {
-  for pod in $(oc get pod | grep Terminating | cut -f 1 -d ' '); do
-    oc delete pod $pod --force --grace-period=0
-  done
-}
-
 couchdbHealthCheck () {
   PASSED=false
   TIMEOUT=0
@@ -69,6 +63,15 @@ deploymentHealthCheck () {
   fi
 
   echo "$1 is up and running"
+}
+
+deleteTerminatingPods () {
+  # Occasionally, terminating pods can take a long time to disappear,
+  # which can be a problem on resource-constrained platforms like
+  # travis, so we hasten them along...
+  for pod in $(oc get pod | grep Terminating | cut -f 1 -d ' '); do
+    oc delete pod $pod --force --grace-period=0
+  done
 }
 
 statefulsetHealthCheck () {
