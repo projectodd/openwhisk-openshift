@@ -22,8 +22,9 @@ This repository contains the necessary templates and compatible
 
 ## Installation
 
-The following command will deploy OpenWhisk in your OpenShift project
-using the latest ephemeral template in this repo:
+The following command will deploy
+[OpenWhisk](https://github.com/apache/incubator-openwhisk) in your OpenShift
+project using the latest ephemeral template in this repo:
 
     oc process -f https://git.io/openwhisk-template | oc create -f -
 
