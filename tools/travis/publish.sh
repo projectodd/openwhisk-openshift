@@ -4,7 +4,7 @@
 # it'll be the most recent commit sha. If you pass the special tag,
 # "openshift-latest", the push will be skipped.
 
-set -exu
+set -ex
 
 SCRIPTDIR=$(cd $(dirname "$0") && pwd)
 ROOTDIR="$SCRIPTDIR/../../"
