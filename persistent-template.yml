@@ -221,247 +221,6 @@ parameters:
 
 objects:
 
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "cluster-controller"
-  spec:
-    dockerImageRepository: "docker.io/strimzi/cluster-controller"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/strimzi/cluster-controller:${STRIMZI_VERSION}
-      name: whisky
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "controller"
-  spec:
-    dockerImageRepository: "docker.io/projectodd/controller"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/projectodd/controller:${OPENWHISK_VERSION}
-      name: whisky
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "invoker"
-  spec:
-    dockerImageRepository: "docker.io/projectodd/invoker"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/projectodd/invoker:${OPENWHISK_VERSION}
-      name: whisky
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "action-nodejs-6"
-  spec:
-    dockerImageRepository: "docker.io/projectodd/action-nodejs-6"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/projectodd/action-nodejs-6:${PROJECTODD_VERSION}
-      name: whisky
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "action-nodejs-8"
-  spec:
-    dockerImageRepository: "docker.io/projectodd/action-nodejs-8"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/projectodd/action-nodejs-8:${PROJECTODD_VERSION}
-      name: whisky
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "action-java-8"
-  spec:
-    dockerImageRepository: "docker.io/projectodd/action-java-8"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/projectodd/action-java-8:${PROJECTODD_VERSION}
-      name: whisky
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "action-python-3"
-  spec:
-    dockerImageRepository: "docker.io/projectodd/action-python-3"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/projectodd/action-python-3:${PROJECTODD_VERSION}
-      name: whisky
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "action-python-2"
-  spec:
-    dockerImageRepository: "docker.io/projectodd/action-python-2"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/projectodd/action-python-2:${PROJECTODD_VERSION}
-      name: whisky
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "action-php-7"
-  spec:
-    dockerImageRepository: "docker.io/projectodd/action-php-7"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/projectodd/action-php-7:${PROJECTODD_VERSION}
-      name: whisky
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "dockerskeleton"
-  spec:
-    dockerImageRepository: "docker.io/projectodd/dockerskeleton"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/projectodd/dockerskeleton:${PROJECTODD_VERSION}
-      name: whisky
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "couchdb"
-  spec:
-    dockerImageRepository: "docker.io/projectodd/whisk_couchdb"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/projectodd/whisk_couchdb:${PROJECTODD_VERSION}
-      name: whisky
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "alarms"
-  spec:
-    dockerImageRepository: "docker.io/projectodd/whisk_alarms"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/projectodd/whisk_alarms:${PROJECTODD_VERSION}
-      name: whisky
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "alarmprovider"
-  spec:
-    dockerImageRepository: "docker.io/openwhisk/alarmprovider"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/openwhisk/alarmprovider:1.9.0
-      name: whisky
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "catalog"
-  spec:
-    dockerImageRepository: "docker.io/projectodd/whisk_catalog"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/projectodd/whisk_catalog:${PROJECTODD_VERSION}
-      name: whisky
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "busybox"
-  spec:
-    dockerImageRepository: "docker.io/busybox"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: docker.io/busybox
-      name: whisky
-      referencePolicy:
-        type: Local
-- apiVersion: "v1"
-  kind: "ImageStream"
-  metadata:
-    name: "nginx"
-  spec:
-    dockerImageRepository: "centos/nginx-112-centos7"
-    lookupPolicy:
-      local: true
-    tags:
-    - from:
-        kind: DockerImage
-        name: "centos/nginx-112-centos7@sha256:42330f7f29ba1ad67819f4ff3ae2472f62de13a827a74736a5098728462212e7"
-      name: whisky
-      referencePolicy:
-        type: Local
-
 - apiVersion: v1
   kind: ConfigMap
   metadata:
@@ -663,7 +422,7 @@ objects:
         containers:
         - name: controller
           imagePullPolicy: IfNotPresent
-          image: controller:whisky
+          image: projectodd/controller:${OPENWHISK_VERSION}
           command: ["/bin/bash", "-c", "COMPONENT_NAME=$(hostname | cut -d'-' -f2) CONFIG_akka_remote_netty_tcp_hostname=$(hostname).controller /init.sh `hostname | cut -d'-' -f2`"]
           ports:
           - name: controller
@@ -841,10 +600,10 @@ objects:
             failureThreshold: 5
         initContainers:
         - name: wait-for-services
-          image: busybox:whisky
+          image: busybox
           command: ['sh', '-cu', 'until nslookup couchdb && nslookup strimzi-openwhisk-kafka; do echo waiting for services; sleep 1; done']
         - name: wait-for-couchdb
-          image: busybox:whisky
+          image: busybox
           command: ['sh', '-c', 'until wget -T 5 --spider http://${COUCHDB_SERVICE_HOST}:${COUCHDB_SERVICE_PORT}/${DB_WHISK_ACTIVATIONS}; do echo waiting for couchdb; sleep 2; done;']
           env:
           - name: "DB_WHISK_ACTIVATIONS"
@@ -864,7 +623,7 @@ objects:
       spec:
         containers:
         - name: catalog
-          image: catalog:whisky
+          image: projectodd/whisk_catalog:${PROJECTODD_VERSION}
           env:
             - name: "WHISK_AUTH"
               valueFrom:
@@ -875,7 +634,7 @@ objects:
               value: "http://controller:8080"
         initContainers:
         - name: wait-for-controller
-          image: busybox:whisky
+          image: busybox
           command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
         restartPolicy: Never
 - apiVersion: v1
@@ -944,7 +703,7 @@ objects:
         containers:
         - name: couchdb
           imagePullPolicy: IfNotPresent
-          image: couchdb:whisky
+          image: projectodd/whisk_couchdb:${PROJECTODD_VERSION}
           command: ["/init.sh"]
           ports:
           - name: couchdb
@@ -1017,8 +776,8 @@ objects:
   metadata:
     name: invoker.config
   data:
-    docker_image_prefix: ""
-    docker_image_tag: whisky
+    docker_image_prefix: "projectodd"
+    docker_image_tag: ${PROJECTODD_VERSION}
     docker_registry: ""
     invoker_container_dns: ""
     invoker_container_network: bridge
@@ -1076,16 +835,16 @@ objects:
   
         initContainers:
         - name: wait-for-services
-          image: busybox:whisky
+          image: busybox
           command: ['sh', '-cu', 'until nslookup couchdb && nslookup strimzi-openwhisk-zookeeper && nslookup strimzi-openwhisk-kafka; do echo waiting for services; sleep 1; done']
         - name: wait-for-controller
-          image: busybox:whisky
+          image: busybox
           command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
   
         containers:
         - name: invoker
           imagePullPolicy: IfNotPresent
-          image: invoker:whisky
+          image: projectodd/invoker:${OPENWHISK_VERSION}
           command: [ "/bin/bash", "-o", "allexport", "/invoker_config/init" ]
           ports:
           - name: invoker
@@ -1268,28 +1027,28 @@ objects:
         restartPolicy: Never
         initContainers:
         - name: preload-openwhisk-nodejs6
-          image: action-nodejs-6:whisky
+          image: projectodd/action-nodejs-6:${PROJECTODD_VERSION}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         - name: preload-openwhisk-java8
-          image: action-java-8:whisky
+          image: projectodd/action-java-8:${PROJECTODD_VERSION}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         - name: preload-openwhisk-python3
-          image: action-python-3:whisky
+          image: projectodd/action-python-3:${PROJECTODD_VERSION}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         - name: preload-openwhisk-python2
-          image: action-python-2:whisky
+          image: projectodd/action-python-2:${PROJECTODD_VERSION}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         - name: preload-openwhisk-php7
-          image: action-php-7:whisky
+          image: projectodd/action-php-7:${PROJECTODD_VERSION}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
         containers:
         - name: preload-openwhisk-nodejs8
-          image: action-nodejs-8:whisky
+          image: projectodd/action-nodejs-8:${PROJECTODD_VERSION}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c", "echo", "success"]
 - apiVersion: v1
@@ -1454,7 +1213,7 @@ objects:
         - name: nginx
           imagePullPolicy: IfNotPresent
           # Image from Mar 22nd
-          image: nginx:whisky
+          image: centos/nginx-112-centos7@sha256:42330f7f29ba1ad67819f4ff3ae2472f62de13a827a74736a5098728462212e7
           command: [ "/bin/bash", "-o", "allexport", "/nginx_config/init" ]
           env:
           - name: KUBERNETES_NAMESPACE
@@ -1473,7 +1232,7 @@ objects:
             mountPath: "/logs"
         initContainers:
         - name: wait-for-controller
-          image: busybox:whisky
+          image: busybox
           command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
 - apiVersion: v1
   kind: Secret
@@ -1506,7 +1265,7 @@ objects:
         serviceAccountName: openwhisk
         containers:
         - name: strimzi-cluster-controller
-          image: cluster-controller:whisky
+          image: strimzi/cluster-controller:${STRIMZI_VERSION}
           env:
           - name: STRIMZI_CONFIGMAP_LABELS
             value: "strimzi.io/kind=cluster"
@@ -1572,7 +1331,7 @@ objects:
         containers:
         - name: alarmprovider
           imagePullPolicy: IfNotPresent
-          image: alarmprovider:whisky
+          image: openwhisk/alarmprovider:1.9.0
           command: [ "/bin/bash", "-c", "source /alarmprovider_config/env; node /alarmsTrigger/app.js" ]
           envFrom:
           - configMapRef:
@@ -1600,11 +1359,11 @@ objects:
             mountPath: "/alarmprovider_config"
         initContainers:
         - name: wait-for-couchdb
-          image: busybox:whisky
+          image: busybox
           command: ['sh', '-cu', 'echo "$COUCHDB_SERVICE_HOST"']
         - name: install-alarms-catalog
           imagePullPolicy: IfNotPresent
-          image: alarms:whisky
+          image: projectodd/whisk_alarms:${PROJECTODD_VERSION}
           envFrom:
           - configMapRef:
               name: alarmprovider
@@ -1646,7 +1405,7 @@ objects:
             restartPolicy: Never
             containers:
             - name: refresh-activations
-              image: alarms:whisky
+              image: projectodd/whisk_alarms:${PROJECTODD_VERSION}
               command: ["/bin/bash", "-c", "/openwhisk/bin/wsk --auth $AUTH_GUEST --apihost http://controller:8080 -i activation list"]
               env:
               - name: "AUTH_GUEST"
@@ -1656,7 +1415,7 @@ objects:
                     key: guest
             initContainers:
             - name: wait-for-controller
-              image: busybox:whisky
+              image: busybox
               command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
               restartPolicy: Never
 - apiVersion: batch/v2alpha1
@@ -1680,7 +1439,7 @@ objects:
             restartPolicy: Never
             containers:
             - name: prune-activations
-              image: couchdb:whisky
+              image: projectodd/whisk_couchdb:${PROJECTODD_VERSION}
               command: ["/bin/bash", "-c", "set -x; curl -H \"Content-Type: application/json\" -X PUT -d \"100\" \"http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB/$DB_ACTIONS/_revs_limit\"; curl -H \"Content-Type: application/json\" -X PUT -d \"5\" \"http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB/$DB_ACTIVATIONS/_revs_limit\"; /openwhisk/tools/db/deleteLogsFromActivations.py --dbUrl http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB --dbName $DB_ACTIVATIONS --days $DB_DAYS_TO_KEEP_LOGS; /openwhisk/tools/db/cleanUpActivations.py --dbUrl http://$DB_USERNAME:$DB_PASSWORD@$COUCHDB_SERVICE_HOST:$COUCHDB_SERVICE_PORT_COUCHDB --dbName $DB_ACTIVATIONS --days $DB_DAYS_TO_KEEP_ACTIVATIONS"]
               env:
               - name: "DB_USERNAME"
@@ -1715,7 +1474,7 @@ objects:
                     key: db_days_to_keep_activations
             initContainers:
             - name: wait-for-couchdb
-              image: busybox:whisky
+              image: busybox
               command: ['sh', '-c', 'until wget -T 5 --spider http://${COUCHDB_SERVICE_HOST}:${COUCHDB_SERVICE_PORT}/${DB_WHISK_ACTIVATIONS}; do echo waiting for couchdb; sleep 2; done;']
               env:
               - name: "DB_WHISK_ACTIVATIONS"

@@ -86,18 +86,6 @@ fix a networking bug in current releases:
     minishift start --memory 8GB
     minishift ssh -- sudo ip link set docker0 promisc on
 
-If your minishift is running OpenShift 3.9.0, you'll need to fix
-another bug:
-
-    minishift openshift config set --patch \
-        '{"admissionConfig":
-            {"pluginConfig":
-                {"openshift.io/ImagePolicy":
-                    {"configuration":
-                        {"apiVersion": "v1",
-                         "kind": "ImagePolicyConfig",
-                         "resolveImages": "AttemptRewrite"}}}}}'
-
 Put your `oc` command in your PATH:
 
     eval $(minishift oc-env)
@@ -282,26 +270,3 @@ Now try adding the action again:
 
     $ wsk -i action create md5hasher target/maven-java.jar --main org.apache.openwhisk.example.maven.App
     ok: created action md5hasher
-
-### Failing to pull ImageStream tags
-
-You may see errors relating to pulling images on OpenShift 3.9:
-
-    $ oc describe pod couchdb-0
-    ...
-	Warning  Failed                 6m (x4 over 10m)    kubelet, localhost  Failed to pull image "couchdb:whisky": rpc error: code = Unknown desc = Tag whisky not found in repository docker.io/library/couchdb
-	Warning  Failed                 6m (x4 over 10m)    kubelet, localhost  Error: ErrImagePull
-	Warning  Failed                 21s (x31 over 10m)  kubelet, localhost  Error: ImagePullBackOff
-
-If so, run the following configuration patch:
-
-    minishift openshift config set --patch \
-        '{"admissionConfig":
-            {"pluginConfig":
-                {"openshift.io/ImagePolicy":
-                    {"configuration":
-                        {"apiVersion": "v1",
-                         "kind": "ImagePolicyConfig",
-                         "resolveImages": "AttemptRewrite"}}}}}'
-
-You may then need to recreate your project and deploy the template again.
