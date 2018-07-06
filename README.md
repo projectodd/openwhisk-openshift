@@ -8,13 +8,26 @@ This repository contains the necessary templates and compatible
 
 ### What is Apache OpenWhisk
 
->Apache OpenWhisk is a serverless, open source cloud platform that allows you to execute code in response to events at any scale. OpenWhisk handles the infrastructure and servers so you can focus on building amazing things.
+>Apache OpenWhisk is a serverless, open source cloud platform that
+>allows you to execute code in response to events at any scale.
+>OpenWhisk handles the infrastructure and servers so you can focus on
+>building amazing things.
 >
->Apache OpenWhisk allows developers to focus on writing value-adding code instead of burning hours on architecture and server management. Write in your preferred language to combine custom code with plug-and-play packages from our rich ecosystem of supporter services, and go live in hours instead of weeks.
+>Apache OpenWhisk allows developers to focus on writing value-adding
+>code instead of burning hours on architecture and server management.
+>Write in your preferred language to combine custom code with
+>plug-and-play packages from our rich ecosystem of supporter services,
+>and go live in hours instead of weeks.
 >
->[Package creators](https://openwhisk.apache.org/package-creators) can easily add their service to Apache OpenWhisk’s growing ecosystem to eliminate the need to build in-house solutions for third-party integrations, reach a broader community of developers, and increase adoption of their products and services.
+>[Package creators](https://openwhisk.apache.org/package-creators) can
+>easily add their service to Apache OpenWhisk’s growing ecosystem to
+>eliminate the need to build in-house solutions for third-party
+>integrations, reach a broader community of developers, and increase
+>adoption of their products and services.
 >
->The Apache OpenWhisk community is driven by open source contributors who are advancing this bleeding-edge technology, growing their skillsets, and pushing the boundaries of serverless technology.
+>The Apache OpenWhisk community is driven by open source contributors
+>who are advancing this bleeding-edge technology, growing their
+>skillsets, and pushing the boundaries of serverless technology.
 
 For more information check the [Apache OpenWhisk](https://openwhisk.apache.org/) website.
 
@@ -92,13 +105,13 @@ Try the following `wsk` commands:
 
 ## Using minishift
 
-First, start [minishift](https://github.com/minishift/minishift/) and
-fix a networking bug in current releases:
+First, start a recent version of
+[minishift](https://github.com/minishift/minishift/) with ample
+resources:
 
     minishift start --memory 8GB
-    minishift ssh -- sudo ip link set docker0 promisc on
 
-Put your `oc` command in your PATH:
+And make the `oc` command available in your PATH:
 
     eval $(minishift oc-env)
 
@@ -111,6 +124,10 @@ That will create an `openwhisk` project, install the resources from
 be ready. When it completes, you should have a functioning OpenWhisk
 platform, to which you can then
 [point your `wsk` command](#using-wsk).
+
+You can do a quick smoke test of your cluster like so:
+
+    ./tools/travis/test.sh
 
 If you prefer not to clone this repo, you can simply follow the
 [installation steps](#installation) after creating a new project:
