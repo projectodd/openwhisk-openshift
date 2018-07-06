@@ -6,6 +6,18 @@
 This repository contains the necessary templates and compatible
 [docker](docker/) images for deploying OpenWhisk on OpenShift.
 
+### What is Apache OpenWhisk
+
+>Apache OpenWhisk is a serverless, open source cloud platform that allows you to execute code in response to events at any scale. OpenWhisk handles the infrastructure and servers so you can focus on building amazing things.
+>
+>Apache OpenWhisk allows developers to focus on writing value-adding code instead of burning hours on architecture and server management. Write in your preferred language to combine custom code with plug-and-play packages from our rich ecosystem of supporter services, and go live in hours instead of weeks.
+>
+>[Package creators](https://openwhisk.apache.org/package-creators) can easily add their service to Apache OpenWhisk’s growing ecosystem to eliminate the need to build in-house solutions for third-party integrations, reach a broader community of developers, and increase adoption of their products and services.
+>
+>The Apache OpenWhisk community is driven by open source contributors who are advancing this bleeding-edge technology, growing their >skillsets, and pushing the boundaries of serverless technology.
+
+For more information check the [Apache OpenWhisk](https://openwhisk.apache.org/) website.
+
 * [Installation](#installation)
 * [Using `wsk`](#using-wsk)
   * [Alarms](#alarms)
