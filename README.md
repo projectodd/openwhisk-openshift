@@ -14,7 +14,7 @@ This repository contains the necessary templates and compatible
 >
 >[Package creators](https://openwhisk.apache.org/package-creators) can easily add their service to Apache OpenWhisk’s growing ecosystem to eliminate the need to build in-house solutions for third-party integrations, reach a broader community of developers, and increase adoption of their products and services.
 >
->The Apache OpenWhisk community is driven by open source contributors who are advancing this bleeding-edge technology, growing their >skillsets, and pushing the boundaries of serverless technology.
+>The Apache OpenWhisk community is driven by open source contributors who are advancing this bleeding-edge technology, growing their skillsets, and pushing the boundaries of serverless technology.
 
 For more information check the [Apache OpenWhisk](https://openwhisk.apache.org/) website.
 
