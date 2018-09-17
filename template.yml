@@ -1362,7 +1362,7 @@ objects:
           volumeMounts:
           - name: alarmprovider-config
             mountPath: "/alarmprovider_config"
-- apiVersion: batch/v2alpha1
+- apiVersion: batch/v1beta1
   kind: CronJob
   metadata:
     name: refresh-activations
@@ -1397,7 +1397,7 @@ objects:
               image: busybox
               command: ['sh', '-c', 'until wget -T 5 --spider http://controller:8080/ping; do echo waiting for controller; sleep 2; done;']
               restartPolicy: Never
-- apiVersion: batch/v2alpha1
+- apiVersion: batch/v1beta1
   kind: CronJob
   metadata:
     name: prune-activations
